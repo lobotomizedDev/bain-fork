@@ -14,7 +14,7 @@ git clone https://github.com/lobotomizedDev/rain ~/.rain
 
 * Copy it to `/usr/local/bin`, so that the command is recognized by your terminal. Make sure to run it with `sudo`.
 ```bash
-sudo cp ~/.rain/targer/release /usr/local/bin
+sudo cp ~/.rain/release /usr/local/bin
 ```
 
 * Run the script from your startup file (e.g. `.bashrc`). Make sure to use `&` at the end of the command as it is a blocking script.
