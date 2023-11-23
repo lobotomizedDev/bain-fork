@@ -1,4 +1,10 @@
-use std::{env, fs, path::PathBuf, process::Command, thread, time::Duration};
+use std::{
+    env, fs,
+    path::{Path, PathBuf},
+    process::Command,
+    thread,
+    time::Duration,
+};
 
 #[derive(Debug)]
 struct Battery {
@@ -54,9 +60,9 @@ fn create_and_set(img_path: &PathBuf, capacity: u8, status: &str) {
         "#800020"
     };
 
-    let tmp = "/tmp/bain";
+    let tmp = Path::new("/tmp/bain");
     fs::create_dir_all(&tmp).unwrap();
-    let background = format!("{}/background.png", tmp);
+    let background = format!("{}/background.png", tmp.display());
 
     Command::new("convert")
         .arg(img_path)
