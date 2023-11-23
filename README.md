@@ -17,14 +17,14 @@ git clone https://github.com/lobotomizedDev/rain ~/.rain
 sudo cp ~/.rain/targer/release /usr/local/bin
 ```
 
-* Run the script from your startup file (e.g. `.xinitrc`). Make sure to use `&` at the end of the command as it is a blocking script.
+* Run the script from your startup file (e.g. `.bashrc`). Make sure to use `&` at the end of the command as it is a blocking script.
 ```bash
 rain rust &
 ```
 
-* Restart your X session (log out and log back in).
+* Execute your bashrc file
 ```bash
-pkill X
+source ~/.bashrc
 ```
 
 ## How to add your own battery indicator?
