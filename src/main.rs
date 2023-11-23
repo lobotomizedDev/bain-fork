@@ -31,7 +31,7 @@ fn main() {
     let img_path = {
         #[allow(deprecated)]
         let home_dir = env::home_dir().unwrap();
-        home_dir.join(format!(".bain/images/{}.png", &args[1]))
+        home_dir.join(format!(".rain/images/{}.png", &args[1]))
     };
 
     let battery_path = match find_battery_path() {
@@ -70,7 +70,7 @@ fn create_and_set(img_path: &PathBuf, capacity: u8, status: &str, arg: &String) 
         color_scheme.low_battery
     };
 
-    let tmp = Path::new("/tmp/bain");
+    let tmp = Path::new("/tmp/rain");
     fs::create_dir_all(&tmp).unwrap();
     let background = format!("{}/background.png", tmp.display());
 
@@ -100,7 +100,7 @@ fn create_and_set(img_path: &PathBuf, capacity: u8, status: &str, arg: &String) 
         .arg("#282828")
         .arg("-extent")
         .arg("3840x2160")
-        .arg("/tmp/bain/background.png")
+        .arg("/tmp/rain/background.png")
         .status()
         .expect("Failed to run convert command");
 
