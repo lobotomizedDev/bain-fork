@@ -3,12 +3,12 @@ use std::{env, fs, path::PathBuf, process::Command, thread, time::Duration};
 #[derive(Debug)]
 struct Battery {
     status: String,
-    capacity: String,
+    capacity: u8,
 }
 
 struct Previous {
     status: String,
-    capacity: String,
+    capacity: u8,
 }
 
 fn main() {
@@ -28,28 +28,27 @@ fn main() {
     };
 
     let mut previous = Previous {
-        capacity: "0".to_string(),
-        status: "Full".to_string(),
+        capacity: 0,
+        status: String::new(),
     };
     loop {
         let battery = create_battery_struct(battery_path.clone());
         if battery.capacity != previous.capacity || battery.status != previous.status {
-            create_and_set(&img_path, &battery.capacity, &battery.status);
+            create_and_set(&img_path, battery.capacity, &battery.status);
             previous.capacity = battery.capacity.clone();
             previous.status = battery.status.clone();
         }
-        println!("{:#?}", &battery);
         thread::sleep(Duration::from_secs(5));
     }
 }
 
-fn create_and_set(img_path: &PathBuf, capacity: &str, status: &str) {
+fn create_and_set(img_path: &PathBuf, capacity: u8, status: &str) {
     let image = image::open(img_path).expect("Failed to open the original image");
     let image_size = (image.width(), image.height());
 
     let color = if status == "Charging" {
         "#C0C0C0"
-    } else if capacity >= "30" {
+    } else if capacity >= 30_u8 {
         "#C45505"
     } else {
         "#800020"
@@ -112,6 +111,6 @@ fn create_battery_struct(battery_path: PathBuf) -> Battery {
     let status = fs::read_to_string(&battery_path.join("status")).unwrap();
     Battery {
         status: status.trim().to_string(),
-        capacity: capacity.trim().to_string(),
+        capacity: capacity.trim().to_string().parse::<u8>().unwrap(),
     }
 }
