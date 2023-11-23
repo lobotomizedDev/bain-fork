@@ -45,10 +45,10 @@ rain example &
 
 ## Create custom color scheme
 
-* Open color\_scheme.rs file
+* Open color\_schemes.rs file
 
 ```bash
-vim .rain/src/color_scheme.rs
+vim .rain/src/color_schemes.rs
 ```
 
 * Inside of match statement add (colors should be in hex)
