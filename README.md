@@ -42,3 +42,29 @@ cp ~/Pictures/example.png ~/.rain/images
 ```bash
 rain example &
 ```
+
+## Create custom color scheme
+
+* Open color\_scheme.rs file
+
+```bash
+vim .rain/src/color_scheme.rs
+```
+
+* Inside of match statement add (colors should be in hex)
+
+```bash
+"example" => Colors {
+    charging: "color1".to_string(),
+    default: "color2".to_string(),
+    low_battery: "color3".to_string(),
+},
+```
+
+* Compile rain
+
+```bash
+cargo build --release
+```
+
+* Continue from "How to use?"
