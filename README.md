@@ -6,7 +6,7 @@ This program is highly inspired by [bain](https://github.com/amishbni/bain/tree/
 
 * Make sure you have these programs installed on your machine: [git](https://git-scm.com/), [imagemagick](https://imagemagick.org), and [feh](https://feh.finalrewind.org).
 
-* Clone the repository into `~/.bain`
+* Clone the repository into `~/.rain`
 
 ```bash
 git clone https://github.com/lobotomizedDev/rain ~/.rain
