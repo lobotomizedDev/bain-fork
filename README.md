@@ -25,14 +25,14 @@ cargo build --release
 sudo cp ~/.rain/target/release/rain /usr/local/bin
 ```
 
-* Run the script from your startup file (e.g. `.bashrc`). Make sure to use `&` at the end of the command as it is a blocking script.
+* Run the script from your startup file (e.g. `.xinitrc`). Make sure to use `&` at the end of the command as it is a blocking script.
 ```bash
 rain rust &
 ```
 
-* Execute your bashrc file
+* Restart your X session (log out and log back in).
 ```bash
-source ~/.bashrc
+pkill X
 ```
 
 ## How to add your own battery indicator?
