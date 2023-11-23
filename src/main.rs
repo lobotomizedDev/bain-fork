@@ -4,7 +4,7 @@ use color_schemes::color_schemes;
 use std::{
     env, fs,
     path::{Path, PathBuf},
-    process::Command,
+    process::{self, Command},
     thread,
     time::Duration,
 };
@@ -28,6 +28,11 @@ pub struct Colors {
 
 fn main() {
     let args: Vec<String> = env::args().collect();
+    if args.len() < 2 {
+        eprintln!("Usage:");
+        eprintln!("rain <arg>");
+        return;
+    }
     let img_path = {
         #[allow(deprecated)]
         let home_dir = env::home_dir().unwrap();
@@ -58,7 +63,13 @@ fn main() {
 }
 
 fn create_and_set(img_path: &PathBuf, capacity: u8, status: &str, arg: &String) {
-    let image = image::open(img_path).expect("Failed to open the original image");
+    let image = match image::open(img_path) {
+        Ok(image) => image,
+        Err(_) => {
+            eprintln!("Image {}.png not found", arg);
+            process::exit(1);
+        }
+    };
     let image_size = (image.width(), image.height());
 
     let color_scheme = color_schemes(arg);

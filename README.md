@@ -10,11 +10,19 @@ This program is highly inspired by [bain](https://github.com/amishbni/bain/tree/
 
 ```bash
 git clone https://github.com/lobotomizedDev/rain ~/.rain
+cd ~/.rain
+```
+
+* Build it
+
+```bash
+cargo build --release
 ```
 
 * Copy it to `/usr/local/bin`, so that the command is recognized by your terminal. Make sure to run it with `sudo`.
+
 ```bash
-sudo cp ~/.rain/bin/rain /usr/local/bin
+sudo cp ~/.rain/target/release/rain /usr/local/bin
 ```
 
 * Run the script from your startup file (e.g. `.bashrc`). Make sure to use `&` at the end of the command as it is a blocking script.
@@ -59,12 +67,6 @@ vim .rain/src/color_schemes.rs
     default: "color2".to_string(),
     low_battery: "color3".to_string(),
 },
-```
-
-* Compile rain
-
-```bash
-cargo build --release
 ```
 
 * Continue from "How to use?"
