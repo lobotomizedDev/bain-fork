@@ -1,0 +1,25 @@
+00:24:26 INFO: Run :adblock-update to get adblock lists.
+[3503:3537:1123/002436.167677:ERROR:shared_context_state.cc(363)] OOP raster support disabled: GrContext creation failed.
+[3503:3537:1123/002436.167733:ERROR:gpu_channel_manager.cc(946)] ContextResult::kFatalFailure: Failed to InitializeGrContext for SharedContextState
+[3503:3537:1123/002436.168309:ERROR:shared_image_stub.cc(492)] SharedImageStub: unable to create context
+[3503:3537:1123/002436.168672:ERROR:gpu_channel.cc(589)] GpuChannel: Failed to create SharedImageStub
+[3503:3537:1123/002436.172859:ERROR:shared_context_state.cc(363)] OOP raster support disabled: GrContext creation failed.
+[3503:3537:1123/002436.172916:ERROR:gpu_channel_manager.cc(946)] ContextResult::kFatalFailure: Failed to InitializeGrContext for SharedContextState
+[3503:3537:1123/002436.173472:ERROR:shared_image_stub.cc(492)] SharedImageStub: unable to create context
+[3503:3537:1123/002436.173501:ERROR:gpu_channel.cc(589)] GpuChannel: Failed to create SharedImageStub
+[3503:3537:1123/002505.952315:ERROR:shared_context_state.cc(363)] OOP raster support disabled: GrContext creation failed.
+[3503:3537:1123/002505.952393:ERROR:gpu_channel_manager.cc(946)] ContextResult::kFatalFailure: Failed to InitializeGrContext for SharedContextState
+[3503:3537:1123/002505.955082:ERROR:shared_image_stub.cc(492)] SharedImageStub: unable to create context
+[3503:3537:1123/002505.955146:ERROR:gpu_channel.cc(589)] GpuChannel: Failed to create SharedImageStub
+[3503:3537:1123/002548.934481:ERROR:shared_context_state.cc(363)] OOP raster support disabled: GrContext creation failed.
+[3503:3537:1123/002548.934545:ERROR:gpu_channel_manager.cc(946)] ContextResult::kFatalFailure: Failed to InitializeGrContext for SharedContextState
+[3503:3537:1123/002548.936827:ERROR:shared_image_stub.cc(492)] SharedImageStub: unable to create context
+[3503:3537:1123/002548.936886:ERROR:gpu_channel.cc(589)] GpuChannel: Failed to create SharedImageStub
+[3503:3537:1123/002551.352070:ERROR:shared_context_state.cc(363)] OOP raster support disabled: GrContext creation failed.
+[3503:3537:1123/002551.352155:ERROR:gpu_channel_manager.cc(946)] ContextResult::kFatalFailure: Failed to InitializeGrContext for SharedContextState
+[3503:3537:1123/002551.355440:ERROR:shared_image_stub.cc(492)] SharedImageStub: unable to create context
+[3503:3537:1123/002551.355599:ERROR:gpu_channel.cc(589)] GpuChannel: Failed to create SharedImageStub
+[3503:3537:1123/002551.366904:ERROR:shared_context_state.cc(363)] OOP raster support disabled: GrContext creation failed.
+[3503:3537:1123/002551.367028:ERROR:gpu_channel_manager.cc(946)] ContextResult::kFatalFailure: Failed to InitializeGrContext for SharedContextState
+[3503:3537:1123/002551.371931:ERROR:shared_image_stub.cc(492)] SharedImageStub: unable to create context
+[3503:3537:1123/002551.372013:ERROR:gpu_channel.cc(589)] GpuChannel: Failed to create SharedImageStub
