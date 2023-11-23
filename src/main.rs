@@ -1,3 +1,6 @@
+mod color_schemes;
+
+use color_schemes::color_schemes;
 use std::{
     env, fs,
     path::{Path, PathBuf},
@@ -17,12 +20,18 @@ struct Previous {
     capacity: u8,
 }
 
+pub struct Colors {
+    charging: String,
+    default: String,
+    low_battery: String,
+}
+
 fn main() {
     let args: Vec<String> = env::args().collect();
     let img_path = {
         #[allow(deprecated)]
         let home_dir = env::home_dir().unwrap();
-        home_dir.join(format!(".bain/images/{}.png", args[1]))
+        home_dir.join(format!(".bain/images/{}.png", &args[1]))
     };
 
     let battery_path = match find_battery_path() {
@@ -40,7 +49,7 @@ fn main() {
     loop {
         let battery = create_battery_struct(battery_path.clone());
         if battery.capacity != previous.capacity || battery.status != previous.status {
-            create_and_set(&img_path, battery.capacity, &battery.status);
+            create_and_set(&img_path, battery.capacity, &battery.status, &args[1]);
             previous.capacity = battery.capacity.clone();
             previous.status = battery.status.clone();
         }
@@ -48,16 +57,17 @@ fn main() {
     }
 }
 
-fn create_and_set(img_path: &PathBuf, capacity: u8, status: &str) {
+fn create_and_set(img_path: &PathBuf, capacity: u8, status: &str, arg: &String) {
     let image = image::open(img_path).expect("Failed to open the original image");
     let image_size = (image.width(), image.height());
 
+    let color_scheme = color_schemes(arg);
     let color = if status == "Charging" {
-        "#C0C0C0"
+        color_scheme.charging
     } else if capacity >= 30_u8 {
-        "#C45505"
+        color_scheme.default
     } else {
-        "#800020"
+        color_scheme.low_battery
     };
 
     let tmp = Path::new("/tmp/bain");
@@ -66,6 +76,7 @@ fn create_and_set(img_path: &PathBuf, capacity: u8, status: &str) {
 
     Command::new("convert")
         .arg(img_path)
+        .arg("(")
         .arg("+clone")
         .arg("-gravity")
         .arg("South")
@@ -81,6 +92,7 @@ fn create_and_set(img_path: &PathBuf, capacity: u8, status: &str) {
         .arg("transparent")
         .arg("-extent")
         .arg(format!("{}x{}", image_size.0, image_size.1))
+        .arg(")")
         .arg("-gravity")
         .arg("Center")
         .arg("-composite")
@@ -88,9 +100,9 @@ fn create_and_set(img_path: &PathBuf, capacity: u8, status: &str) {
         .arg("#282828")
         .arg("-extent")
         .arg("3840x2160")
-        .arg(&background)
-        .output()
-        .expect("Failed to execute convert command");
+        .arg("/tmp/bain/background.png")
+        .status()
+        .expect("Failed to run convert command");
 
     let _ = Command::new("feh")
         .arg("--no-fehbg")
