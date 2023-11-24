@@ -4,7 +4,7 @@ This program is highly inspired by [bain](https://github.com/amishbni/bain/tree/
 
 ## How to use?
 
-* Make sure you have these programs installed on your machine: [git](https://git-scm.com/), [imagemagick](https://imagemagick.org), and [feh](https://feh.finalrewind.org).
+* Make sure you have these programs installed on your machine: [git](https://git-scm.com/), [imagemagick](https://imagemagick.org), [feh](https://feh.finalrewind.org) and [rust](https://rust-lang.github.io/rustup/installation/index.html).
 
 * Clone the repository into `~/.rain`
 
@@ -69,4 +69,4 @@ vim .rain/src/color_schemes.rs
 },
 ```
 
-* Continue from "How to use?"
+* Build and copy to bin just like in 'How to use?'
