@@ -28,15 +28,14 @@ pub struct Colors {
 
 fn main() {
     let args: Vec<String> = env::args().collect();
-    if args.len() < 2 {
-        eprintln!("Usage:");
-        eprintln!("rain <arg>");
-        return;
-    }
+    let name = match args.get(1) {
+        Some(arg) => arg,
+        _ => "rust",
+    };
     let img_path = {
         #[allow(deprecated)]
         let home_dir = env::home_dir().unwrap();
-        home_dir.join(format!(".rain/images/{}.png", &args[1]))
+        home_dir.join(format!(".rain/images/{}.png", name))
     };
 
     let battery_path = match find_battery_path() {
@@ -51,10 +50,11 @@ fn main() {
         capacity: 0,
         status: String::new(),
     };
+
     loop {
-        let battery = create_battery_struct(battery_path.clone());
+        let battery = create_battery_struct(&battery_path);
         if battery.capacity != previous.capacity || battery.status != previous.status {
-            create_and_set(&img_path, battery.capacity, &battery.status, &args[1]);
+            create_and_set(&img_path, battery.capacity, &battery.status, name);
             previous.capacity = battery.capacity.clone();
             previous.status = battery.status.clone();
         }
@@ -62,17 +62,16 @@ fn main() {
     }
 }
 
-fn create_and_set(img_path: &PathBuf, capacity: u8, status: &str, arg: &String) {
+fn create_and_set(img_path: &PathBuf, capacity: u8, status: &str, name: &str) {
     let image = match image::open(img_path) {
         Ok(image) => image,
         Err(_) => {
-            eprintln!("Image {}.png not found", arg);
+            eprintln!("Image {}.png not found", name);
             process::exit(1);
         }
     };
     let image_size = (image.width(), image.height());
-
-    let color_scheme = color_schemes(arg);
+    let color_scheme = color_schemes(name);
     let color = if status == "Charging" {
         color_scheme.charging
     } else if capacity >= 30_u8 {
@@ -84,7 +83,6 @@ fn create_and_set(img_path: &PathBuf, capacity: u8, status: &str, arg: &String) 
     let tmp = Path::new("/tmp/rain");
     fs::create_dir_all(&tmp).unwrap();
     let background = format!("{}/background.png", tmp.display());
-
     Command::new("convert")
         .arg(img_path)
         .arg("(")
@@ -113,33 +111,40 @@ fn create_and_set(img_path: &PathBuf, capacity: u8, status: &str, arg: &String) 
         .arg("3840x2160")
         .arg("/tmp/rain/background.png")
         .status()
-        .expect("Failed to run convert command");
+        .expect("Failed to run command convert, check if ImageMagick is installed");
 
-    let _ = Command::new("feh")
+    Command::new("feh")
         .arg("--no-fehbg")
         .arg("--bg-scale")
         .arg(&background)
-        .status();
+        .status()
+        .expect("Failed to set a wallpaper, check if feh in installed");
 }
 
 fn find_battery_path() -> Option<PathBuf> {
-    let mut power_dir_entries = fs::read_dir("/sys/class/power_supply").unwrap();
-    power_dir_entries.find_map(|entry| {
-        let path = entry.unwrap().path();
-        let file_content = fs::read_to_string(&path.join("type")).unwrap_or_default();
-        if file_content.trim() == "Battery" {
-            Some(path)
-        } else {
-            None
-        }
-    })
+    fs::read_dir("/sys/class/power_supply")
+        .unwrap()
+        .filter_map(|entry| {
+            let path = entry.unwrap().path();
+            let handle = thread::spawn(move || {
+                let file_content = fs::read_to_string(&path.join("type")).unwrap_or_default();
+                if file_content.trim() == "Battery" {
+                    Some(path)
+                } else {
+                    None
+                }
+            });
+            Some(handle)
+        })
+        .into_iter()
+        .find_map(|handle| handle.join().unwrap())
 }
 
-fn create_battery_struct(battery_path: PathBuf) -> Battery {
-    let capacity = fs::read_to_string(&battery_path.join("capacity")).unwrap();
-    let status = fs::read_to_string(&battery_path.join("status")).unwrap();
+fn create_battery_struct(battery_path: &PathBuf) -> Battery {
+    let capacity = fs::read_to_string(battery_path.join("capacity")).unwrap();
+    let status = fs::read_to_string(battery_path.join("status")).unwrap();
     Battery {
         status: status.trim().to_string(),
-        capacity: capacity.trim().to_string().parse::<u8>().unwrap(),
+        capacity: capacity.trim().to_string().parse::<u8>().unwrap_or(0),
     }
 }
