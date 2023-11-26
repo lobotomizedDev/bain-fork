@@ -6,28 +6,28 @@ This program is highly inspired by [bain](https://github.com/amishbni/bain/tree/
 
 * Make sure you have these programs installed on your machine: [git](https://git-scm.com/), [imagemagick](https://imagemagick.org), [feh](https://feh.finalrewind.org) and [rust](https://rust-lang.github.io/rustup/installation/index.html).
 
-* Clone the repository into `~/.rain`
+* Clone repository
 
 ```bash
-git clone https://github.com/lobotomizedDev/rain ~/.rain
-cd ~/.rain
+git clone https://github.com/lobotomizedDev/rain
 ```
 
-* Build it
+* Run Makefile script
 
 ```bash
-cargo build --release
-```
-
-* Copy it to `/usr/local/bin`, so that the command is recognized by your terminal. Make sure to run it with `sudo`.
-
-```bash
-sudo cp ~/.rain/target/release/rain /usr/local/bin
+make clean install
 ```
 
 * Run the script from your startup file (e.g. `.xinitrc`). Make sure to use `&` at the end of the command as it is a blocking script.
 ```bash
-rain rust &
+rain &
+```
+
+* If you want to specify which image you want to use as your battery indicator use name of image as
+argument
+
+```bash
+rain arch &
 ```
 
 * Restart your X session (log out and log back in).
@@ -42,7 +42,13 @@ pkill X
 * Copy your image to images directory
 
 ```bash
-cp ~/Pictures/example.png ~/.rain/images
+cp ~/Pictures/example.png rain/images
+```
+
+* Run Makefile script
+
+```bash
+make clean install
 ```
 
 * Run rain with the name of your image as arg
@@ -69,4 +75,8 @@ vim .rain/src/color_schemes.rs
 },
 ```
 
-* Build and copy to bin just like in 'How to use?'
+* Run Makefile script
+
+```bash
+make clean install
+```

@@ -1,6 +1,7 @@
 mod color_schemes;
 
 use color_schemes::color_schemes;
+use os_release::OsRelease;
 use std::{
     env, fs,
     path::{Path, PathBuf},
@@ -29,8 +30,11 @@ pub struct Colors {
 fn main() {
     let args: Vec<String> = env::args().collect();
     let name = match args.get(1) {
-        Some(arg) => arg,
-        _ => "rust",
+        Some(arg) => arg.to_string(),
+        _ => match OsRelease::new() {
+            Ok(os_release) => os_release.id,
+            _ => "rust".to_string(),
+        },
     };
     let img_path = {
         #[allow(deprecated)]
@@ -54,15 +58,15 @@ fn main() {
     loop {
         let battery = create_battery_struct(&battery_path);
         if battery.capacity != previous.capacity || battery.status != previous.status {
-            create_and_set(&img_path, battery.capacity, &battery.status, name);
-            previous.capacity = battery.capacity.clone();
+            create_and_set(&img_path, battery.capacity, &battery.status, &name);
+            previous.capacity = battery.capacity;
             previous.status = battery.status.clone();
         }
         thread::sleep(Duration::from_secs(5));
     }
 }
 
-fn create_and_set(img_path: &PathBuf, capacity: u8, status: &str, name: &str) {
+fn create_and_set(img_path: &PathBuf, capacity: u8, status: &str, name: &String) {
     let image = match image::open(img_path) {
         Ok(image) => image,
         Err(_) => {
@@ -81,7 +85,7 @@ fn create_and_set(img_path: &PathBuf, capacity: u8, status: &str, name: &str) {
     };
 
     let tmp = Path::new("/tmp/rain");
-    fs::create_dir_all(&tmp).unwrap();
+    fs::create_dir_all(tmp).unwrap();
     let background = format!("{}/background.png", tmp.display());
     Command::new("convert")
         .arg(img_path)
@@ -124,10 +128,10 @@ fn create_and_set(img_path: &PathBuf, capacity: u8, status: &str, name: &str) {
 fn find_battery_path() -> Option<PathBuf> {
     fs::read_dir("/sys/class/power_supply")
         .unwrap()
-        .filter_map(|entry| {
+        .map(|entry| {
             let path = entry.unwrap().path();
             let handle = thread::spawn(move || {
-                let file_content = fs::read_to_string(&path.join("type")).unwrap_or_default();
+                let file_content = fs::read_to_string(path.join("type")).unwrap_or_default();
                 if file_content.trim() == "Battery" {
                     Some(path)
                 } else {
@@ -136,11 +140,10 @@ fn find_battery_path() -> Option<PathBuf> {
             });
             Some(handle)
         })
-        .into_iter()
-        .find_map(|handle| handle.join().unwrap())
+        .find_map(|handle| handle?.join().unwrap())
 }
 
-fn create_battery_struct(battery_path: &PathBuf) -> Battery {
+fn create_battery_struct(battery_path: &Path) -> Battery {
     let capacity = fs::read_to_string(battery_path.join("capacity")).unwrap();
     let status = fs::read_to_string(battery_path.join("status")).unwrap();
     Battery {

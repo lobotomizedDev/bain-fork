@@ -1,6 +1,6 @@
 use crate::Colors;
 
-pub fn color_schemes(arg: &str) -> Colors {
+pub fn color_schemes(arg: &String) -> Colors {
     match arg.to_lowercase().as_str() {
         "rust" => Colors {
             charging: "#C0C0C0".to_string(),
