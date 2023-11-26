@@ -31,13 +31,19 @@ rain arch &
 ```
 
 * Restart your X session (log out and log back in).
+
 ```bash
 pkill X
 ```
 
 ## How to add your own battery indicator?
 
-* Create png image with #8FBCBB background color
+* Create png image with #8FBCBB background color, to convert your image to that color use this
+ImageMagick command:
+
+```bash
+convert input_image.jpg -fill "#8fbcbb" -colorize 100% output_image.jpg
+```
 
 * Copy your image to images directory
 
