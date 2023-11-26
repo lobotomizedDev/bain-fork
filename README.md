@@ -42,7 +42,7 @@ pkill X
 ImageMagick command:
 
 ```bash
-convert input_image.jpg -fill "#8fbcbb" -colorize 100% output_image.jpg
+convert input_image.png -fill "#8fbcbb" -colorize 100% output_image.png
 ```
 
 * Copy your image to images directory
