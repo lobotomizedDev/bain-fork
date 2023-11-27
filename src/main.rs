@@ -1,6 +1,7 @@
 mod color_schemes;
 
 use color_schemes::color_schemes;
+use image;
 use os_release::OsRelease;
 use std::{
     env, fs,
@@ -9,6 +10,7 @@ use std::{
     thread,
     time::Duration,
 };
+use wallpaper;
 
 #[derive(Debug)]
 struct Battery {
@@ -87,6 +89,7 @@ fn create_and_set(img_path: &PathBuf, capacity: u8, status: &str, name: &String)
     let tmp = Path::new("/tmp/rain");
     fs::create_dir_all(tmp).unwrap();
     let background = format!("{}/background.png", tmp.display());
+
     Command::new("convert")
         .arg(img_path)
         .arg("(")
@@ -117,12 +120,7 @@ fn create_and_set(img_path: &PathBuf, capacity: u8, status: &str, name: &String)
         .status()
         .expect("Failed to run command convert, check if ImageMagick is installed");
 
-    Command::new("feh")
-        .arg("--no-fehbg")
-        .arg("--bg-scale")
-        .arg(&background)
-        .status()
-        .expect("Failed to set a wallpaper, check if feh in installed");
+    wallpaper::set_from_path(&background).expect("Error while setting wallpaper");
 }
 
 fn find_battery_path() -> Option<PathBuf> {

@@ -4,7 +4,8 @@ This program is highly inspired by [bain](https://github.com/amishbni/bain/tree/
 
 ## How to use?
 
-* Make sure you have these programs installed on your machine: [git](https://git-scm.com/), [imagemagick](https://imagemagick.org), [feh](https://feh.finalrewind.org) and [rust](https://rust-lang.github.io/rustup/installation/index.html).
+* Make sure you have these programs installed on your machine:
+[git](https://git-scm.com/), [imagemagick](https://imagemagick.org), [rust](https://rust-lang.github.io/rustup/installation/index.html) and [feh](https://feh.finalrewind.org) (May not be required for Desktop Managers like KDE or GNOME).
 
 * Clone repository
 
@@ -15,7 +16,7 @@ git clone https://github.com/lobotomizedDev/rain
 * Run Makefile script
 
 ```bash
-make clean install
+make install
 ```
 
 * Run the script from your startup file (e.g. `.xinitrc`). Make sure to use `&` at the end of the command as it is a blocking script.
@@ -54,7 +55,7 @@ cp ~/Pictures/example.png rain/images
 * Run Makefile script
 
 ```bash
-make clean install
+make install
 ```
 
 * Run rain with the name of your image as arg
@@ -84,5 +85,5 @@ vim .rain/src/color_schemes.rs
 * Run Makefile script
 
 ```bash
-make clean install
+make install
 ```
