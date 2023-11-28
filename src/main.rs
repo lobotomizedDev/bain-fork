@@ -125,7 +125,7 @@ fn create_and_set(img_path: &PathBuf, capacity: u8, status: &str, name: &String)
 
 fn find_battery_path() -> Option<PathBuf> {
     fs::read_dir("/sys/class/power_supply")
-        .unwrap()
+        .expect("Could not find power_supply dir")
         .map(|entry| {
             let path = entry.unwrap().path();
             let handle = thread::spawn(move || {
@@ -142,10 +142,15 @@ fn find_battery_path() -> Option<PathBuf> {
 }
 
 fn create_battery_struct(battery_path: &Path) -> Battery {
-    let capacity = fs::read_to_string(battery_path.join("capacity")).unwrap();
-    let status = fs::read_to_string(battery_path.join("status")).unwrap();
-    Battery {
-        status: status.trim().to_string(),
-        capacity: capacity.trim().to_string().parse::<u8>().unwrap_or(0),
-    }
+    let capacity = fs::read_to_string(battery_path.join("capacity"))
+        .unwrap()
+        .trim()
+        .to_string()
+        .parse::<u8>()
+        .unwrap_or(0);
+    let status = fs::read_to_string(battery_path.join("status"))
+        .unwrap()
+        .trim()
+        .to_string();
+    Battery { status, capacity }
 }

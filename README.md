@@ -55,7 +55,7 @@ cp ~/Pictures/example.png rain/images
 * Run Makefile script
 
 ```bash
-make install
+make add
 ```
 
 * Run rain with the name of your image as arg
@@ -85,5 +85,5 @@ vim .rain/src/color_schemes.rs
 * Run Makefile script
 
 ```bash
-make install
+make clean install
 ```
