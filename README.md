@@ -49,7 +49,7 @@ convert input_image.png -fill "#8fbcbb" -colorize 100% output_image.png
 * Copy your image to images directory
 
 ```bash
-cp ~/Pictures/example.png rain/images
+cp ~/Pictures/output_image.png rain/images
 ```
 
 * Run Makefile script
@@ -61,7 +61,7 @@ make add
 * Run rain with the name of your image as arg
 
 ```bash
-rain example &
+rain output_image &
 ```
 
 ## Create custom color scheme

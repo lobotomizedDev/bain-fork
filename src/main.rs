@@ -1,7 +1,9 @@
 mod color_schemes;
 
 use color_schemes::color_schemes;
+use home;
 use image;
+use lazy_static::lazy_static;
 use os_release::OsRelease;
 use std::{
     env, fs,
@@ -12,14 +14,19 @@ use std::{
 };
 use wallpaper;
 
-#[derive(Debug)]
+#[derive(PartialEq, Eq)]
+enum BatteryStatus {
+    Charging,
+    NotCharging,
+}
+
 struct Battery {
-    status: String,
+    status: BatteryStatus,
     capacity: u8,
 }
 
 struct Previous {
-    status: String,
+    status: BatteryStatus,
     capacity: u8,
 }
 
@@ -29,7 +36,16 @@ pub struct Colors {
     low_battery: String,
 }
 
+lazy_static! {
+    static ref PATH: PathBuf = PathBuf::from(home::home_dir().unwrap().join(".rain"));
+}
+
 fn main() {
+    match wallpaper::set_from_path(&format!("{}/background.png", PATH.display())) {
+        Ok(wallpaper) => wallpaper,
+        _ => {}
+    };
+
     let args: Vec<String> = env::args().collect();
     let name = match args.get(1) {
         Some(arg) => arg.to_string(),
@@ -39,8 +55,7 @@ fn main() {
         },
     };
     let img_path = {
-        #[allow(deprecated)]
-        let home_dir = env::home_dir().unwrap();
+        let home_dir = home::home_dir().unwrap();
         home_dir.join(format!(".rain/images/{}.png", name))
     };
 
@@ -54,7 +69,7 @@ fn main() {
 
     let mut previous = Previous {
         capacity: 0,
-        status: String::new(),
+        status: BatteryStatus::NotCharging,
     };
 
     loop {
@@ -62,13 +77,13 @@ fn main() {
         if battery.capacity != previous.capacity || battery.status != previous.status {
             create_and_set(&img_path, battery.capacity, &battery.status, &name);
             previous.capacity = battery.capacity;
-            previous.status = battery.status.clone();
+            previous.status = battery.status;
         }
         thread::sleep(Duration::from_secs(5));
     }
 }
 
-fn create_and_set(img_path: &PathBuf, capacity: u8, status: &str, name: &String) {
+fn create_and_set(img_path: &PathBuf, capacity: u8, status: &BatteryStatus, name: &String) {
     let image = match image::open(img_path) {
         Ok(image) => image,
         Err(_) => {
@@ -78,18 +93,16 @@ fn create_and_set(img_path: &PathBuf, capacity: u8, status: &str, name: &String)
     };
     let image_size = (image.width(), image.height());
     let color_scheme = color_schemes(name);
-    let color = if status == "Charging" {
-        color_scheme.charging
-    } else if capacity >= 30_u8 {
-        color_scheme.default
-    } else {
-        color_scheme.low_battery
+    let color = match status {
+        BatteryStatus::Charging => color_scheme.charging,
+        _ if capacity >= 30_u8 => color_scheme.default,
+        _ => color_scheme.low_battery,
     };
 
-    let tmp = Path::new("/tmp/rain");
-    fs::create_dir_all(tmp).unwrap();
-    let background = format!("{}/background.png", tmp.display());
+    fs::create_dir_all(&*PATH).unwrap();
+    let background = format!("{}/background.png", PATH.display());
 
+    // I hate this with my whole heart but I'm too lazy to play with image crate
     Command::new("convert")
         .arg(img_path)
         .arg("(")
@@ -116,7 +129,7 @@ fn create_and_set(img_path: &PathBuf, capacity: u8, status: &str, name: &String)
         .arg("#282828")
         .arg("-extent")
         .arg("3840x2160")
-        .arg("/tmp/rain/background.png")
+        .arg(&background)
         .status()
         .expect("Failed to run command convert, check if ImageMagick is installed");
 
@@ -148,9 +161,13 @@ fn create_battery_struct(battery_path: &Path) -> Battery {
         .to_string()
         .parse::<u8>()
         .unwrap_or(0);
-    let status = fs::read_to_string(battery_path.join("status"))
+    let status = match fs::read_to_string(battery_path.join("status"))
         .unwrap()
         .trim()
-        .to_string();
+    {
+        "Charging" => BatteryStatus::Charging,
+        _ => BatteryStatus::NotCharging,
+    };
+
     Battery { status, capacity }
 }

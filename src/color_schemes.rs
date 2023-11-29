@@ -27,6 +27,11 @@ pub fn color_schemes(arg: &String) -> Colors {
             default: "#E95420".to_string(),
             low_battery: "#800020".to_string(),
         },
+        "artix" => Colors {
+            charging: "#C0C0C0".to_string(),
+            default: "#1793D0".to_string(),
+            low_battery: "#800020".to_string(),
+        },
         _ => Colors {
             charging: "#FFFF00".to_string(),
             default: "#5BC236".to_string(),
