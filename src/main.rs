@@ -20,14 +20,40 @@ enum BatteryStatus {
     NotCharging,
 }
 
+impl BatteryStatus {
+    fn new(status: &str) -> BatteryStatus {
+        match status {
+            "Charging" => Self::Charging,
+            _ => Self::NotCharging,
+        }
+    }
+}
+
 struct Battery {
     status: BatteryStatus,
     capacity: u8,
 }
 
-struct Previous {
-    status: BatteryStatus,
-    capacity: u8,
+impl Battery {
+    fn get_status(battery_path: &Path) -> BatteryStatus {
+        let status = fs::read_to_string(battery_path.join("status")).unwrap();
+        BatteryStatus::new(status.trim())
+    }
+
+    fn get_capacity(battery_path: &Path) -> u8 {
+        fs::read_to_string(battery_path.join("capacity"))
+            .unwrap()
+            .trim()
+            .to_string()
+            .parse::<u8>()
+            .unwrap_or(0)
+    }
+
+    fn new(battery_path: &Path) -> Self {
+        let status = Self::get_status(battery_path);
+        let capacity = Self::get_capacity(battery_path);
+        Self { status, capacity }
+    }
 }
 
 pub struct Colors {
@@ -67,17 +93,16 @@ fn main() {
         }
     };
 
-    let mut previous = Previous {
+    let mut previous = Battery {
         capacity: 0,
         status: BatteryStatus::NotCharging,
     };
 
     loop {
-        let battery = create_battery_struct(&battery_path);
+        let battery = Battery::new(&battery_path);
         if battery.capacity != previous.capacity || battery.status != previous.status {
             create_and_set(&img_path, battery.capacity, &battery.status, &name);
-            previous.capacity = battery.capacity;
-            previous.status = battery.status;
+            previous = battery;
         }
         thread::sleep(Duration::from_secs(5));
     }
@@ -152,22 +177,4 @@ fn find_battery_path() -> Option<PathBuf> {
             Some(handle)
         })
         .find_map(|handle| handle?.join().unwrap())
-}
-
-fn create_battery_struct(battery_path: &Path) -> Battery {
-    let capacity = fs::read_to_string(battery_path.join("capacity"))
-        .unwrap()
-        .trim()
-        .to_string()
-        .parse::<u8>()
-        .unwrap_or(0);
-    let status = match fs::read_to_string(battery_path.join("status"))
-        .unwrap()
-        .trim()
-    {
-        "Charging" => BatteryStatus::Charging,
-        _ => BatteryStatus::NotCharging,
-    };
-
-    Battery { status, capacity }
 }
