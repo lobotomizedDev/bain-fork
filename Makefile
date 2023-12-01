@@ -2,7 +2,7 @@ all:
 	cargo build --release
 
 add:
-	cp -r images/* ~/.rain/images
+	cp -r images/* ~/.rain
 
 clean:
 	su -c 'rm -rf /usr/local/bin/rain'
@@ -10,8 +10,8 @@ clean:
 
 install: all
 	su -c 'cp target/release/rain /usr/local/bin'
-	mkdir -p ~/.rain/images
-	cp -r images/* ~/.rain/images
+	mkdir -p ~/.rain
+	cp -r images/* ~/.rain
 	rain &
 
 uninstall:

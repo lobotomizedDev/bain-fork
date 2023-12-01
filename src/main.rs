@@ -2,13 +2,12 @@ mod color_schemes;
 
 use color_schemes::color_schemes;
 use home;
-use image;
-use lazy_static::lazy_static;
+use image::{self, DynamicImage, GenericImageView, ImageBuffer, Rgba};
 use os_release::OsRelease;
+use rayon::prelude::*;
 use std::{
     env, fs,
     path::{Path, PathBuf},
-    process::{self, Command},
     thread,
     time::Duration,
 };
@@ -44,34 +43,24 @@ impl Battery {
         fs::read_to_string(battery_path.join("capacity"))
             .unwrap()
             .trim()
-            .to_string()
             .parse::<u8>()
             .unwrap_or(0)
     }
 
     fn new(battery_path: &Path) -> Self {
-        let status = Self::get_status(battery_path);
+        let status = Self::get_status(&battery_path);
         let capacity = Self::get_capacity(battery_path);
         Self { status, capacity }
     }
 }
 
 pub struct Colors {
-    charging: String,
-    default: String,
-    low_battery: String,
-}
-
-lazy_static! {
-    static ref PATH: PathBuf = PathBuf::from(home::home_dir().unwrap().join(".rain"));
+    charging: [u8; 4],
+    default: [u8; 4],
+    low_battery: [u8; 4],
 }
 
 fn main() {
-    match wallpaper::set_from_path(&format!("{}/background.png", PATH.display())) {
-        Ok(wallpaper) => wallpaper,
-        _ => {}
-    };
-
     let args: Vec<String> = env::args().collect();
     let name = match args.get(1) {
         Some(arg) => arg.to_string(),
@@ -82,13 +71,21 @@ fn main() {
     };
     let img_path = {
         let home_dir = home::home_dir().unwrap();
-        home_dir.join(format!(".rain/images/{}.png", name))
+        home_dir.join(format!(".rain/{}.png", name))
     };
 
     let battery_path = match find_battery_path() {
         Some(path) => path,
         None => {
             eprintln!("Could not find battery");
+            return;
+        }
+    };
+
+    let image = match image::open(img_path) {
+        Ok(image) => image,
+        Err(_) => {
+            eprintln!("Image {}.png not found", name);
             return;
         }
     };
@@ -101,22 +98,18 @@ fn main() {
     loop {
         let battery = Battery::new(&battery_path);
         if battery.capacity != previous.capacity || battery.status != previous.status {
-            create_and_set(&img_path, battery.capacity, &battery.status, &name);
+            create_and_set(battery.capacity, &battery.status, &name, &image);
             previous = battery;
         }
         thread::sleep(Duration::from_secs(5));
     }
 }
 
-fn create_and_set(img_path: &PathBuf, capacity: u8, status: &BatteryStatus, name: &String) {
-    let image = match image::open(img_path) {
-        Ok(image) => image,
-        Err(_) => {
-            eprintln!("Image {}.png not found", name);
-            process::exit(1);
-        }
-    };
-    let image_size = (image.width(), image.height());
+fn create_and_set(capacity: u8, status: &BatteryStatus, name: &String, image: &DynamicImage) {
+    let tmp = PathBuf::from("/tmp/rain");
+    fs::create_dir_all(&tmp).unwrap();
+
+    let (width, height) = (image.width(), image.height());
     let color_scheme = color_schemes(name);
     let color = match status {
         BatteryStatus::Charging => color_scheme.charging,
@@ -124,41 +117,31 @@ fn create_and_set(img_path: &PathBuf, capacity: u8, status: &BatteryStatus, name
         _ => color_scheme.low_battery,
     };
 
-    fs::create_dir_all(&*PATH).unwrap();
-    let background = format!("{}/background.png", PATH.display());
+    let mut output: ImageBuffer<Rgba<u8>, Vec<u8>> = ImageBuffer::new(width, height);
+    image.pixels().for_each(|(x, y, pixel)| {
+        let capacity = 1.0 - capacity as f32 / 100.0;
+        if y as f32 > height as f32 * capacity && pixel == Rgba([143, 188, 187, 255]) {
+            output.put_pixel(x, y, Rgba(color));
+        } else {
+            output.put_pixel(x, y, pixel);
+        }
+    });
 
-    // I hate this with my whole heart but I'm too lazy to play with image crate
-    Command::new("convert")
-        .arg(img_path)
-        .arg("(")
-        .arg("+clone")
-        .arg("-gravity")
-        .arg("South")
-        .arg("-crop")
-        .arg(format!("x{}%", capacity))
-        .arg("-fuzz")
-        .arg("50%")
-        .arg("-fill")
-        .arg(color)
-        .arg("-opaque")
-        .arg("#8FBCBB")
-        .arg("-background")
-        .arg("transparent")
-        .arg("-extent")
-        .arg(format!("{}x{}", image_size.0, image_size.1))
-        .arg(")")
-        .arg("-gravity")
-        .arg("Center")
-        .arg("-composite")
-        .arg("-background")
-        .arg("#282828")
-        .arg("-extent")
-        .arg("3840x2160")
-        .arg(&background)
-        .status()
-        .expect("Failed to run command convert, check if ImageMagick is installed");
+    let mut background = ImageBuffer::new(3840, 2160);
+    background
+        .pixels_mut()
+        .collect::<Vec<_>>()
+        .par_iter_mut()
+        .for_each(|pixel| **pixel = Rgba([40, 40, 40, 255]));
 
-    wallpaper::set_from_path(&background).expect("Error while setting wallpaper");
+    let x = (3840 - width) / 2;
+    let y = (2160 - height) / 2;
+    image::imageops::overlay(&mut background, &output, x as i64, y as i64);
+
+    let background_path = tmp.join("background.png");
+    background.save(tmp.join(&background_path)).unwrap();
+    wallpaper::set_from_path(tmp.join(background_path).to_str().unwrap())
+        .expect("Error while setting wallpaper");
 }
 
 fn find_battery_path() -> Option<PathBuf> {

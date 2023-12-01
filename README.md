@@ -5,7 +5,21 @@ This program is highly inspired by [bain](https://github.com/amishbni/bain/tree/
 ## How to use?
 
 * Make sure you have these programs installed on your machine:
-[git](https://git-scm.com/), [imagemagick](https://imagemagick.org), [rust](https://rust-lang.github.io/rustup/installation/index.html) and [feh](https://feh.finalrewind.org) (May not be required for Desktop Managers like KDE or GNOME).
+[git](https://git-scm.com/), [rust](https://rust-lang.github.io/rustup/installation/index.html)
+
+* Supported environments:
+ - DWM (requires feh)
+ - i3 (requires feh)
+ - GNOME
+ - KDE
+ - Cinnamon
+ - Unity
+ - Budgie
+ - XFCE
+ - LXDE
+ - MATE
+ - Deepin
+ - Most Wayland compositors (requires swaybg)
 
 * Clone repository
 
@@ -72,13 +86,13 @@ rain output_image &
 vim .rain/src/color_schemes.rs
 ```
 
-* Inside of match statement add (colors should be in hex)
+* Inside of match statement add (colors should be in rgba)
 
 ```bash
 "example" => Colors {
-    charging: "color1".to_string(),
-    default: "color2".to_string(),
-    low_battery: "color3".to_string(),
+    charging: [r, g, b, a],
+    default: [r, g, b, a],
+    low_battery: [r, g, b, ],
 },
 ```
 

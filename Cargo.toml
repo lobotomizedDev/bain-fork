@@ -6,6 +6,6 @@ edition = "2021"
 [dependencies]
 home = "0.5.5"
 image = "0.24.7"
-lazy_static = "1.4.0"
 os-release = "0.1.0"
+rayon = "1.8.0"
 wallpaper = "3.2.0"
