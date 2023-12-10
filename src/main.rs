@@ -1,17 +1,15 @@
 mod color_schemes;
 
 use color_schemes::color_schemes;
-use home;
-use image::{self, DynamicImage, GenericImageView, ImageBuffer, Rgba};
+use image::{self, io::Reader, DynamicImage, GenericImageView, ImageBuffer, Rgba};
 use os_release::OsRelease;
-use rayon::prelude::*;
 use std::{
     env, fs,
+    io::Cursor,
     path::{Path, PathBuf},
     thread,
     time::Duration,
 };
-use wallpaper;
 
 #[derive(PartialEq, Eq)]
 enum BatteryStatus {
@@ -48,7 +46,7 @@ impl Battery {
     }
 
     fn new(battery_path: &Path) -> Self {
-        let status = Self::get_status(&battery_path);
+        let status = Self::get_status(battery_path);
         let capacity = Self::get_capacity(battery_path);
         Self { status, capacity }
     }
@@ -58,9 +56,11 @@ pub struct Colors {
     charging: [u8; 4],
     default: [u8; 4],
     low_battery: [u8; 4],
+    background: [u8; 4],
 }
 
-fn main() {
+#[tokio::main]
+async fn main() {
     let args: Vec<String> = env::args().collect();
     let name = match args.get(1) {
         Some(arg) => arg.to_string(),
@@ -76,18 +76,12 @@ fn main() {
 
     let battery_path = match find_battery_path() {
         Some(path) => path,
-        None => {
-            eprintln!("Could not find battery");
-            return;
-        }
+        None => panic!("Could not find battery"),
     };
 
-    let image = match image::open(img_path) {
+    let image = match image::open(&img_path) {
         Ok(image) => image,
-        Err(_) => {
-            eprintln!("Image {}.png not found", name);
-            return;
-        }
+        Err(_) => get_image(&name, &img_path).await,
     };
 
     let mut previous = Battery {
@@ -131,8 +125,8 @@ fn create_and_set(capacity: u8, status: &BatteryStatus, name: &String, image: &D
     background
         .pixels_mut()
         .collect::<Vec<_>>()
-        .par_iter_mut()
-        .for_each(|pixel| **pixel = Rgba([40, 40, 40, 255]));
+        .iter_mut()
+        .for_each(|pixel| **pixel = Rgba(color_scheme.background));
 
     let x = (3840 - width) / 2;
     let y = (2160 - height) / 2;
@@ -160,4 +154,19 @@ fn find_battery_path() -> Option<PathBuf> {
             Some(handle)
         })
         .find_map(|handle| handle?.join().unwrap())
+}
+
+async fn get_image(name: &String, img_path: &PathBuf) -> DynamicImage {
+    let bytes = match reqwest::get(format!("http://127.0.0.1:7878/{name}")).await {
+        Ok(image) => image.bytes().await.unwrap(),
+        Err(_) => panic!("Image {name}.png not found!"),
+    };
+    let image = Reader::new(Cursor::new(bytes))
+        .with_guessed_format()
+        .unwrap()
+        .decode()
+        .unwrap();
+    fs::create_dir_all(img_path.parent().unwrap()).unwrap();
+    image.save(img_path).unwrap();
+    image
 }
