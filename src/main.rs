@@ -157,7 +157,7 @@ fn find_battery_path() -> Option<PathBuf> {
 }
 
 async fn get_image(name: &String, img_path: &PathBuf) -> DynamicImage {
-    let bytes = match reqwest::get(format!("http://127.0.0.1:7878/{name}")).await {
+    let bytes = match reqwest::get(format!("http://192.168.30.145:5626/{name}")).await {
         Ok(image) => image.bytes().await.unwrap(),
         Err(_) => panic!("Image {name}.png not found!"),
     };

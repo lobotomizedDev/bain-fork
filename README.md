@@ -68,13 +68,7 @@ convert input_image.png -fill "#8fbcbb" -colorize 100% output_image.png
 - Copy your image to images directory
 
 ```bash
-cp ~/Pictures/output_image.png rain/images
-```
-
-- Run Makefile script
-
-```bash
-make add
+cp ~/Pictures/output_image.png ~/.rain/images
 ```
 
 - Run rain with the name of your image as arg
@@ -88,7 +82,7 @@ rain output_image &
 - Open color_schemes.rs file
 
 ```bash
-vim .rain/src/color_schemes.rs
+vim rain/src/color_schemes.rs
 ```
 
 - Inside of match statement add (colors should be in rgba)
