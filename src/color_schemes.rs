@@ -2,12 +2,6 @@ use crate::Colors;
 
 pub fn color_schemes(arg: &String) -> Colors {
     match arg.to_lowercase().as_str() {
-        "rust" => Colors {
-            charging: [192, 192, 192, 255],
-            default: [196, 85, 5, 255],
-            low_battery: [128, 0, 32, 255],
-            background: [40, 40, 40, 255],
-        },
         "arch" => Colors {
             charging: [192, 192, 192, 255],
             default: [23, 147, 208, 255],
