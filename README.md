@@ -1,103 +1,104 @@
-# rain - the battery indicator written in rust
+# Rain - Highly performant battery indicator
 
-This program is highly inspired by
-[bain](https://github.com/amishbni/bain/tree/master)
+### Prerequisites
 
-## How to use?
+Make sure you have the following programs installed:
 
-- Make sure you have these programs installed on your machine:
-  [git](https://git-scm.com/),
-  [rust](https://rust-lang.github.io/rustup/installation/index.html)
+- [git](https://git-scm.com/)
+- [rust](https://rust-lang.github.io/rustup/installation/index.html)
 
-- Supported environments:
+### Supported Environments
 
-* DWM (requires feh)
-* i3 (requires feh)
-* GNOME
-* KDE
-* Cinnamon
-* Unity
-* Budgie
-* XFCE
-* LXDE
-* MATE
-* Deepin
-* Most Wayland compositors (requires swaybg)
+Rain supports the following environments:
 
-- Clone repository
+- DWM (requires feh)
+- i3 (requires feh)
+- GNOME
+- KDE
+- Cinnamon
+- Unity
+- Budgie
+- XFCE
+- LXDE
+- MATE
+- Deepin
+- Most Wayland compositors (requires swaybg)
 
-```bash
-git clone https://github.com/lobotomizedDev/rain
-```
+### Installation
 
-- Run Makefile script
+1. Clone the repository:
 
-```bash
-make install
-```
+    ```bash
+    git clone https://github.com/lobotomizedDev/rain
+    ```
 
-- Run the script from your startup file (e.g. `.xinitrc`). Make sure to use `&`
-  at the end of the command as it is a blocking script.
+2. Run the Makefile script:
 
-```bash
-rain &
-```
+    ```bash
+    make install
+    ```
 
-- If you want to specify which image you want to use as your battery indicator
-  use name of image as argument
+3. Run the script from your startup file (e.g., `.xinitrc`). Add `&` at the end of the command to run it in the background:
 
-```bash
-rain arch &
-```
+    ```bash
+    rain &
+    ```
 
-- Restart your X session (log out and log back in).
+4. To specify a custom image for your battery indicator, use the image name as an argument:
 
-```bash
-pkill X
-```
+    ```bash
+    rain arch &
+    ```
 
-## How to add your own battery indicator?
+5. Restart your X session (log out and log back in):
 
-- Create png image with #8FBCBB background color, to convert your image to that
-  color use this ImageMagick command:
+    ```bash
+    pkill X
+    ```
 
-```bash
-convert input_image.png -fill "#8fbcbb" -colorize 100% output_image.png
-```
+### Adding Custom Battery Indicator
 
-- Copy your image to images directory
+1. Create a PNG image with a `#8FBCBB` background color. Use the following ImageMagick command to convert your image:
 
-```bash
-cp ~/Pictures/output_image.png ~/.rain/images
-```
+    ```bash
+    convert input_image.png -fill "#8fbcbb" -colorize 100% output_image.png
+    ```
 
-- Run rain with the name of your image as arg
+2. Copy your image to the `images` directory:
 
-```bash
-rain output_image &
-```
+    ```bash
+    cp ~/Pictures/output_image.png ~/.rain/images
+    ```
 
-## Create custom color scheme
+3. Run Rain with the name of your image as an argument:
 
-- Open color_schemes.rs file
+    ```bash
+    rain output_image &
+    ```
 
-```bash
-vim rain/src/color_schemes.rs
-```
+### Custom Color Scheme
 
-- Inside of match statement add (colors should be in rgba)
+1. Open the `color_schemes.rs` file:
 
-```bash
-"example" => Colors {
-    charging: [r, g, b, a],
-    default: [r, g, b, a],
-    low_battery: [r, g, b, a],
-    background: [r, g, b, a],
-},
-```
+    ```bash
+    vim rain/src/color_schemes.rs
+    ```
 
-- Run Makefile script
+2. Inside the `match` statement, add your custom color scheme (colors should be in rgba):
 
-```bash
-make clean install
-```
+    ```rust
+    "example" => Colors {
+        charging: [r, g, b, a],
+        default: [r, g, b, a],
+        low_battery: [r, g, b, a],
+        background: [r, g, b, a],
+    },
+    ```
+
+3. Run the Makefile script:
+
+    ```bash
+    make clean install
+    ```
+
+Highly inspired by [bain](https://github.com/amishbni/bain/tree/master).
