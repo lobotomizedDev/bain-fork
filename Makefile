@@ -1,16 +1,13 @@
-all:
-	cargo build --release
-
 clean:
-	su -c 'rm -rf /usr/local/bin/rain'
-	pkill rain
+	rm -rf /usr/local/bin/ruin
+	pkill ruin
+	pkill swww
 
-install: all
-	su -c 'cp target/release/rain /usr/local/bin'
-	mkdir -p ~/.rain
-	rain &
+install:
+	cargo build --release
+	cp target/release/ruin /usr/local/bin
+	mkdir -p ~/.ruin
 
 uninstall:
-	cargo clean
-	su -c 'rm -rf /usr/local/bin/rain'
-	rm -rf ~/.rain
+	rm -rf /usr/local/bin/ruin
+	rm -rf ~/.ruin

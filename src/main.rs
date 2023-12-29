@@ -7,6 +7,7 @@ use std::{
     env, fs,
     io::Cursor,
     path::{Path, PathBuf},
+    process::Command,
     thread,
     time::Duration,
 };
@@ -71,7 +72,7 @@ async fn main() {
     };
     let img_path = {
         let home_dir = home::home_dir().unwrap();
-        home_dir.join(format!(".rain/{}.png", name))
+        home_dir.join(format!(".ruin/{}.png", name))
     };
 
     let battery_path = match find_battery_path() {
@@ -89,6 +90,7 @@ async fn main() {
         status: BatteryStatus::NotCharging,
     };
 
+    let _ = Command::new("swww").arg("init").spawn();
     loop {
         let battery = Battery::new(&battery_path);
         if battery.capacity != previous.capacity || battery.status != previous.status {
@@ -100,7 +102,7 @@ async fn main() {
 }
 
 fn create_and_set(capacity: u8, status: &BatteryStatus, name: &String, image: &DynamicImage) {
-    let tmp = PathBuf::from("/tmp/rain");
+    let tmp = PathBuf::from("/tmp/ruin");
     fs::create_dir_all(&tmp).unwrap();
 
     let (width, height) = (image.width(), image.height());
@@ -134,8 +136,10 @@ fn create_and_set(capacity: u8, status: &BatteryStatus, name: &String, image: &D
 
     let background_path = tmp.join("background.png");
     background.save(tmp.join(&background_path)).unwrap();
-    wallpaper::set_from_path(tmp.join(background_path).to_str().unwrap())
-        .expect("Error while setting wallpaper");
+    let _ = Command::new("swww")
+        .arg("img")
+        .arg(&background_path)
+        .spawn();
 }
 
 fn find_battery_path() -> Option<PathBuf> {
@@ -157,7 +161,7 @@ fn find_battery_path() -> Option<PathBuf> {
 }
 
 async fn get_image(name: &String, img_path: &PathBuf) -> DynamicImage {
-    let bytes = match reqwest::get(format!("https://rain.shuttleapp.rs/{name}")).await {
+    let bytes = match reqwest::get(format!("https://ruin.shuttleapp.rs/{name}")).await {
         Ok(image) => image.bytes().await.unwrap(),
         Err(_) => panic!("Image {name}.png not found!"),
     };

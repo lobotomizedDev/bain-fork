@@ -1,4 +1,4 @@
-# Rain - Highly performant battery indicator
+# Ruin - Highly performant battery indicator
 
 ### Prerequisites
 
@@ -6,30 +6,18 @@ Make sure you have the following programs installed:
 
 - [git](https://git-scm.com/)
 - [rust](https://rust-lang.github.io/rustup/installation/index.html)
+- [swww](https://github.com/Horus645/swww)
 
 ### Supported Environments
 
-Rain supports the following environments:
-
-- DWM (requires feh)
-- i3 (requires feh)
-- GNOME
-- KDE
-- Cinnamon
-- Unity
-- Budgie
-- XFCE
-- LXDE
-- MATE
-- Deepin
-- Most Wayland compositors (requires swaybg)
+Ruin supports most Wayland compositors
 
 ### Installation
 
 1. Clone the repository:
 
     ```bash
-    git clone https://github.com/lobotomizedDev/rain
+    git clone https://github.com/lobotomizedDev/ruin
     ```
 
 2. Run the Makefile script:
@@ -41,20 +29,16 @@ Rain supports the following environments:
 3. Run the script from your startup file (e.g., `.xinitrc`). Add `&` at the end of the command to run it in the background:
 
     ```bash
-    rain &
+    ruin &
     ```
 
 4. To specify a custom image for your battery indicator, use the image name as an argument:
 
     ```bash
-    rain arch &
+    ruin arch &
     ```
 
-5. Restart your X session (log out and log back in):
-
-    ```bash
-    pkill X
-    ```
+5. Restart your compositor (log out and log back in):
 
 ### Adding Custom Battery Indicator
 
@@ -67,13 +51,13 @@ Rain supports the following environments:
 2. Copy your image to the `images` directory:
 
     ```bash
-    cp ~/Pictures/output_image.png ~/.rain/images
+    cp ~/Pictures/output_image.png ~/.ruin/images
     ```
 
-3. Run Rain with the name of your image as an argument:
+3. Run Ruin with the name of your image as an argument:
 
     ```bash
-    rain output_image &
+    ruin output_image &
     ```
 
 ### Custom Color Scheme
@@ -81,7 +65,7 @@ Rain supports the following environments:
 1. Open the `color_schemes.rs` file:
 
     ```bash
-    vim rain/src/color_schemes.rs
+    vim ruin/src/color_schemes.rs
     ```
 
 2. Inside the `match` statement, add your custom color scheme (colors should be in rgba):
