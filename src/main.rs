@@ -91,20 +91,34 @@ async fn main() {
     };
 
     let _ = Command::new("swww").arg("init").spawn();
+
+    let tmp = PathBuf::from("/tmp/ruin");
+    fs::create_dir_all(&tmp).unwrap();
+
+    let background_path = tmp.join("background.png");
     loop {
         let battery = Battery::new(&battery_path);
         if battery.capacity != previous.capacity || battery.status != previous.status {
-            create_and_set(battery.capacity, &battery.status, &name, &image);
+            create_and_set(
+                battery.capacity,
+                &battery.status,
+                &name,
+                &image,
+                &background_path,
+            );
             previous = battery;
         }
         thread::sleep(Duration::from_secs(5));
     }
 }
 
-fn create_and_set(capacity: u8, status: &BatteryStatus, name: &String, image: &DynamicImage) {
-    let tmp = PathBuf::from("/tmp/ruin");
-    fs::create_dir_all(&tmp).unwrap();
-
+fn create_and_set(
+    capacity: u8,
+    status: &BatteryStatus,
+    name: &String,
+    image: &DynamicImage,
+    background_path: &PathBuf,
+) {
     let (width, height) = (image.width(), image.height());
     let color_scheme = color_schemes(name);
     let color = match status {
@@ -133,13 +147,17 @@ fn create_and_set(capacity: u8, status: &BatteryStatus, name: &String, image: &D
     let x = (3840 - width) / 2;
     let y = (2160 - height) / 2;
     image::imageops::overlay(&mut background, &output, x as i64, y as i64);
+    background.save(&background_path).unwrap();
 
-    let background_path = tmp.join("background.png");
-    background.save(tmp.join(&background_path)).unwrap();
-    let _ = Command::new("swww")
-        .arg("img")
-        .arg(&background_path)
-        .spawn();
+    match env::var("XDG_SESSION_TYPE").unwrap_or_default().as_str() {
+        "wayland" => {
+            let _ = Command::new("swww").arg("img").arg(background_path).spawn();
+        }
+        _ => {
+            wallpaper::set_from_path(background_path.to_str().unwrap())
+                .expect("Error while setting wallpaper");
+        }
+    }
 }
 
 fn find_battery_path() -> Option<PathBuf> {

@@ -6,11 +6,21 @@ Make sure you have the following programs installed:
 
 - [git](https://git-scm.com/)
 - [rust](https://rust-lang.github.io/rustup/installation/index.html)
-- [swww](https://github.com/Horus645/swww)
 
 ### Supported Environments
 
-Ruin supports most Wayland compositors
+- Most Wayland compositors (requires [swww](https://github.com/Horus645/swww))
+- dwm (requires [feh](https://github.com/derf/feh.git))
+- i3 (requires [feh](https://github.com/derf/feh.git))
+- GNOME
+- KDE
+- Cinnamon
+- Unity
+- Budgie
+- XFCE
+- LXDE
+- MATE
+- Deepin
 
 ### Installation
 
