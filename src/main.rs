@@ -90,8 +90,6 @@ async fn main() {
         status: BatteryStatus::NotCharging,
     };
 
-    let _ = Command::new("swww").arg("init").spawn();
-
     let tmp = PathBuf::from("/tmp/ruin");
     fs::create_dir_all(&tmp).unwrap();
 

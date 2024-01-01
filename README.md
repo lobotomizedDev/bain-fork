@@ -42,13 +42,21 @@ Make sure you have the following programs installed:
     ruin &
     ```
 
-4. To specify a custom image for your battery indicator, use the image name as an argument:
+4. If on wayland include this line in your startup file:
+
+    ```bash
+    swww init 
+    ```
+
+
+
+5. To specify a custom image for your battery indicator, use the image name as an argument:
 
     ```bash
     ruin arch &
     ```
 
-5. Restart your compositor (log out and log back in):
+6. Restart your session (log out and log back in):
 
 ### Adding Custom Battery Indicator
 
