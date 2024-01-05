@@ -1,64 +1,13 @@
+mod battery;
 mod color_schemes;
 
-use color_schemes::color_schemes;
+use battery::{Battery, BatteryStatus};
+use color_schemes::{color_schemes, Colors};
 use image::{self, io::Reader, DynamicImage, GenericImageView, ImageBuffer, Rgba};
 use os_release::OsRelease;
 use std::{
-    env, fs,
-    io::Cursor,
-    path::{Path, PathBuf},
-    process::Command,
-    thread,
-    time::Duration,
+    env, error::Error, fs, io::Cursor, path::PathBuf, process::Command, thread, time::Duration,
 };
-
-#[derive(PartialEq, Eq)]
-enum BatteryStatus {
-    Charging,
-    NotCharging,
-}
-
-impl BatteryStatus {
-    fn new(status: &str) -> BatteryStatus {
-        match status {
-            "Charging" => Self::Charging,
-            _ => Self::NotCharging,
-        }
-    }
-}
-
-struct Battery {
-    status: BatteryStatus,
-    capacity: u8,
-}
-
-impl Battery {
-    fn get_status(battery_path: &Path) -> BatteryStatus {
-        let status = fs::read_to_string(battery_path.join("status")).unwrap();
-        BatteryStatus::new(status.trim())
-    }
-
-    fn get_capacity(battery_path: &Path) -> u8 {
-        fs::read_to_string(battery_path.join("capacity"))
-            .unwrap()
-            .trim()
-            .parse::<u8>()
-            .unwrap_or(0)
-    }
-
-    fn new(battery_path: &Path) -> Self {
-        let status = Self::get_status(battery_path);
-        let capacity = Self::get_capacity(battery_path);
-        Self { status, capacity }
-    }
-}
-
-pub struct Colors {
-    charging: [u8; 4],
-    default: [u8; 4],
-    low_battery: [u8; 4],
-    background: [u8; 4],
-}
 
 #[tokio::main]
 async fn main() {
@@ -67,22 +16,23 @@ async fn main() {
         Some(arg) => arg.to_string(),
         _ => match OsRelease::new() {
             Ok(os_release) => os_release.id,
-            _ => "rust".to_string(),
+            _ => "linux".to_string(),
         },
     };
     let img_path = {
-        let home_dir = home::home_dir().unwrap();
+        let home_dir = home::home_dir().expect("Home dir not found");
         home_dir.join(format!(".ruin/{}.png", name))
     };
 
-    let battery_path = match find_battery_path() {
-        Some(path) => path,
-        None => panic!("Could not find battery"),
-    };
-
+    let battery_path = find_battery_path().expect("Battery not found");
+    let tmp = PathBuf::from("/tmp/ruin");
+    fs::create_dir_all(&tmp).expect("Failed to create tmp dir");
+    let background_path = tmp.join("background.png");
     let image = match image::open(&img_path) {
         Ok(image) => image,
-        Err(_) => get_image(&name, &img_path).await,
+        Err(_) => get_image(&name, &img_path)
+            .await
+            .expect("Failed to fetch image from server"),
     };
 
     let mut previous = Battery {
@@ -90,35 +40,25 @@ async fn main() {
         status: BatteryStatus::NotCharging,
     };
 
-    let tmp = PathBuf::from("/tmp/ruin");
-    fs::create_dir_all(&tmp).unwrap();
-
-    let background_path = tmp.join("background.png");
     loop {
         let battery = Battery::new(&battery_path);
         if battery.capacity != previous.capacity || battery.status != previous.status {
-            create_and_set(
-                battery.capacity,
-                &battery.status,
-                &name,
-                &image,
-                &background_path,
-            );
+            let image = create(&battery, color_schemes(&name), &image);
+            let _ = set_wallpaper(image, &background_path);
             previous = battery;
         }
         thread::sleep(Duration::from_secs(5));
     }
 }
 
-fn create_and_set(
-    capacity: u8,
-    status: &BatteryStatus,
-    name: &String,
+fn create(
+    battery: &Battery,
+    color_scheme: Colors,
     image: &DynamicImage,
-    background_path: &PathBuf,
-) {
+) -> ImageBuffer<Rgba<u8>, Vec<u8>> {
+    let (status, capacity) = (&battery.status, battery.capacity);
     let (width, height) = (image.width(), image.height());
-    let color_scheme = color_schemes(name);
+
     let color = match status {
         BatteryStatus::Charging => color_scheme.charging,
         _ if capacity >= 30_u8 => color_scheme.default,
@@ -145,26 +85,35 @@ fn create_and_set(
     let x = (3840 - width) / 2;
     let y = (2160 - height) / 2;
     image::imageops::overlay(&mut background, &output, x as i64, y as i64);
-    background.save(&background_path).unwrap();
 
+    background
+}
+
+fn set_wallpaper(
+    image: ImageBuffer<Rgba<u8>, Vec<u8>>,
+    background_path: &PathBuf,
+) -> Result<(), Box<dyn Error>> {
+    image.save(&background_path)?;
     match env::var("XDG_SESSION_TYPE").unwrap_or_default().as_str() {
         "wayland" => {
-            let _ = Command::new("swww").arg("img").arg(background_path).spawn();
+            Command::new("swww")
+                .arg("img")
+                .arg(background_path)
+                .spawn()?;
         }
-        _ => {
-            wallpaper::set_from_path(background_path.to_str().unwrap())
-                .expect("Error while setting wallpaper");
-        }
+        _ => wallpaper::set_from_path(background_path.display().to_string().as_str())?,
     }
+
+    Ok(())
 }
 
 fn find_battery_path() -> Option<PathBuf> {
     fs::read_dir("/sys/class/power_supply")
-        .expect("Could not find power_supply dir")
+        .ok()?
         .map(|entry| {
-            let path = entry.unwrap().path();
+            let path = entry.ok()?.path();
             let handle = thread::spawn(move || {
-                let file_content = fs::read_to_string(path.join("type")).unwrap_or_default();
+                let file_content = fs::read_to_string(path.join("type")).ok()?;
                 if file_content.trim() == "Battery" {
                     Some(path)
                 } else {
@@ -173,20 +122,17 @@ fn find_battery_path() -> Option<PathBuf> {
             });
             Some(handle)
         })
-        .find_map(|handle| handle?.join().unwrap())
+        .find_map(|handle| handle?.join().ok()?)
 }
 
-async fn get_image(name: &String, img_path: &PathBuf) -> DynamicImage {
-    let bytes = match reqwest::get(format!("https://ruin.shuttleapp.rs/{name}")).await {
-        Ok(image) => image.bytes().await.unwrap(),
-        Err(_) => panic!("Image {name}.png not found!"),
-    };
-    let image = Reader::new(Cursor::new(bytes))
-        .with_guessed_format()
-        .unwrap()
-        .decode()
-        .unwrap();
-    fs::create_dir_all(img_path.parent().unwrap()).unwrap();
-    image.save(img_path).unwrap();
-    image
+async fn get_image(name: &String, img_path: &PathBuf) -> Result<DynamicImage, Box<dyn Error>> {
+    let image = reqwest::get(format!("https://ruin.shuttleapp.rs/{name}"))
+        .await?
+        .bytes()
+        .await?;
+    let image = Reader::new(Cursor::new(image))
+        .with_guessed_format()?
+        .decode()?;
+    image.save(img_path)?;
+    Ok(image)
 }

@@ -1,4 +1,9 @@
-use crate::Colors;
+pub struct Colors {
+    pub charging: [u8; 4],
+    pub default: [u8; 4],
+    pub low_battery: [u8; 4],
+    pub background: [u8; 4],
+}
 
 pub fn color_schemes(arg: &String) -> Colors {
     match arg.to_lowercase().as_str() {

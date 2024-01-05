@@ -3,7 +3,6 @@ clean:
 	pkill ruin
 
 install:
-	cargo build --release
 	cp target/release/ruin /usr/local/bin
 	mkdir -p ~/.ruin
 
