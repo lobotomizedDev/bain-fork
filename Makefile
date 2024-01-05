@@ -1,11 +1,21 @@
-clean:
-	rm -rf /usr/local/bin/ruin
-	pkill ruin
+BINARY_NAME = ruin
+TARGET = target/release/$(BINARY_NAME)
+INSTALL_LOCATION = /usr/local/bin/$(BINARY_NAME)
+IMAGES_LOCATION = ~/.$(BINARY_NAME)
+
+.PHONY: all build install uninstall clean
+
+all:
+	cargo build --release
 
 install:
-	cp target/release/ruin /usr/local/bin
-	mkdir -p ~/.ruin
+	cp $(TARGET) $(INSTALL_LOCATION)
+	mkdir -p $(IMAGES_LOCATION)
 
 uninstall:
-	rm -rf /usr/local/bin/ruin
-	rm -rf ~/.ruin
+	rm $(INSTALL_LOCATION)
+	rm -rf $(IMAGES_LOCATION)
+
+clean:
+	pkill ruin
+	rm $(INSTALL_LOCATION)
