@@ -1,4 +1,4 @@
-# Ruin - Highly performant battery indicator
+# Ruin - The battery indicator (written in rust)
 
 ### Prerequisites
 
