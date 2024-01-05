@@ -24,7 +24,6 @@ async fn main() {
         home_dir.join(format!(".ruin/{}.png", name))
     };
 
-    let battery_path = find_battery_path().expect("Battery not found");
     let tmp = PathBuf::from("/tmp/ruin");
     fs::create_dir_all(&tmp).expect("Failed to create tmp dir");
     let background_path = tmp.join("background.png");
@@ -41,7 +40,7 @@ async fn main() {
     };
 
     loop {
-        let battery = Battery::new(&battery_path);
+        let battery = Battery::new();
         if battery.capacity != previous.capacity || battery.status != previous.status {
             let image = create(&battery, color_schemes(&name), &image);
             let _ = set_wallpaper(image, &background_path);
@@ -105,24 +104,6 @@ fn set_wallpaper(
     }
 
     Ok(())
-}
-
-fn find_battery_path() -> Option<PathBuf> {
-    fs::read_dir("/sys/class/power_supply")
-        .ok()?
-        .map(|entry| {
-            let path = entry.ok()?.path();
-            let handle = thread::spawn(move || {
-                let file_content = fs::read_to_string(path.join("type")).ok()?;
-                if file_content.trim() == "Battery" {
-                    Some(path)
-                } else {
-                    None
-                }
-            });
-            Some(handle)
-        })
-        .find_map(|handle| handle?.join().ok()?)
 }
 
 async fn get_image(name: &String, img_path: &PathBuf) -> Result<DynamicImage, Box<dyn Error>> {

@@ -1,4 +1,8 @@
-use std::{fs, path::Path};
+use std::{
+    fs,
+    path::{Path, PathBuf},
+    thread,
+};
 
 #[derive(PartialEq, Eq)]
 pub enum BatteryStatus {
@@ -34,9 +38,28 @@ impl Battery {
             .unwrap_or(0)
     }
 
-    pub fn new(battery_path: &Path) -> Self {
-        let status = Self::get_status(battery_path);
-        let capacity = Self::get_capacity(battery_path);
+    pub fn new() -> Self {
+        let battery_path = find_battery_path().expect("Battery not found");
+        let status = Self::get_status(&battery_path);
+        let capacity = Self::get_capacity(&battery_path);
         Self { status, capacity }
     }
+}
+
+fn find_battery_path() -> Option<PathBuf> {
+    fs::read_dir("/sys/class/power_supply")
+        .ok()?
+        .map(|entry| {
+            let path = entry.ok()?.path();
+            let handle = thread::spawn(move || {
+                let file_content = fs::read_to_string(path.join("type")).ok()?;
+                if file_content.trim() == "Battery" {
+                    Some(path)
+                } else {
+                    None
+                }
+            });
+            Some(handle)
+        })
+        .find_map(|handle| handle?.join().ok()?)
 }

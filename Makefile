@@ -8,7 +8,7 @@ IMAGES_LOCATION = ~/.$(BINARY_NAME)
 all:
 	cargo build --release
 
-install:
+install: all
 	cp $(TARGET) $(INSTALL_LOCATION)
 	mkdir -p $(IMAGES_LOCATION)
 
