@@ -12,13 +12,14 @@ use std::{
 #[tokio::main]
 async fn main() {
     let args: Vec<String> = env::args().collect();
-    let name = match args.get(1) {
-        Some(arg) => arg.to_string(),
-        _ => match OsRelease::new() {
-            Ok(os_release) => os_release.id,
-            _ => "linux".to_string(),
+    let name = args.get(1).map_or_else(
+        || {
+            OsRelease::new()
+                .ok()
+                .map_or_else(|| "linux".to_string(), |os_release| os_release.id)
         },
-    };
+        |arg| arg.to_string(),
+    );
     let img_path = {
         let home_dir = home::home_dir().expect("Home dir not found");
         home_dir.join(format!(".ruin/{}.png", name))
@@ -39,10 +40,12 @@ async fn main() {
         status: BatteryStatus::NotCharging,
     };
 
+    let color_scheme = color_schemes(&name);
+
     loop {
         let battery = Battery::new();
-        if battery.capacity != previous.capacity || battery.status != previous.status {
-            let image = create(&battery, color_schemes(&name), &image);
+        if battery != previous {
+            let image = create(&battery, &color_scheme, &image);
             let _ = set_wallpaper(image, &background_path);
             previous = battery;
         }
@@ -52,7 +55,7 @@ async fn main() {
 
 fn create(
     battery: &Battery,
-    color_scheme: Colors,
+    color_scheme: &Colors,
     image: &DynamicImage,
 ) -> ImageBuffer<Rgba<u8>, Vec<u8>> {
     let (status, capacity) = (&battery.status, battery.capacity);
@@ -117,3 +120,6 @@ async fn get_image(name: &String, img_path: &PathBuf) -> Result<DynamicImage, Bo
     image.save(img_path)?;
     Ok(image)
 }
+
+
+

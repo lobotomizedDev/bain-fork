@@ -4,7 +4,7 @@ use std::{
     thread,
 };
 
-#[derive(PartialEq, Eq)]
+#[derive(PartialEq)]
 pub enum BatteryStatus {
     Charging,
     NotCharging,
@@ -19,6 +19,7 @@ impl BatteryStatus {
     }
 }
 
+#[derive(PartialEq)]
 pub struct Battery {
     pub status: BatteryStatus,
     pub capacity: u8,
