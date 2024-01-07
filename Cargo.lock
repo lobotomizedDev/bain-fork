@@ -442,15 +442,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "d77f7ec81a6d05a3abb01ab6eb7590f6083d08449fe5a1c8b1e620283546ccb7"
 
 [[package]]
-name = "home"
-version = "0.5.9"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "e3d1354bf6b7235cb4a0576c2619fd4ed18183f689b12b006a0ee7329eeff9a5"
-dependencies = [
- "windows-sys 0.52.0",
-]
-
-[[package]]
 name = "http"
 version = "0.2.11"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -781,15 +772,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "os-release"
-version = "0.1.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "82f29ae2f71b53ec19cc23385f8e4f3d90975195aa3d09171ba3bef7159bec27"
-dependencies = [
- "lazy_static",
-]
-
-[[package]]
 name = "parking_lot"
 version = "0.12.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -964,9 +946,7 @@ dependencies = [
 name = "ruin"
 version = "1.1.1"
 dependencies = [
- "home",
  "image",
- "os-release",
  "reqwest",
  "tokio",
  "wallpaper",

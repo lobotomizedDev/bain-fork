@@ -3,26 +3,26 @@ mod color_schemes;
 
 use battery::{Battery, BatteryStatus};
 use color_schemes::{color_schemes, Colors};
-use image::{self, io::Reader, DynamicImage, GenericImageView, ImageBuffer, Rgba};
-use os_release::OsRelease;
+use image::{self, imageops, io::Reader, DynamicImage, GenericImageView, ImageBuffer, Rgba};
+use reqwest::get;
 use std::{
-    env, error::Error, fs, io::Cursor, path::PathBuf, process::Command, thread, time::Duration,
+    env,
+    error::Error,
+    fs::{self, File},
+    io::{BufRead, BufReader, Cursor},
+    path::PathBuf,
+    process::Command,
+    thread,
+    time::Duration,
 };
 
 #[tokio::main]
 async fn main() {
     let args: Vec<String> = env::args().collect();
-    let name = args.get(1).map_or_else(
-        || {
-            OsRelease::new()
-                .ok()
-                .map_or_else(|| "linux".to_string(), |os_release| os_release.id)
-        },
-        |arg| arg.to_string(),
-    );
+    let name = get_name(args).expect("Could not get distribution name");
     let img_path = {
-        let home_dir = home::home_dir().expect("Home dir not found");
-        home_dir.join(format!(".ruin/{}.png", name))
+        let home_dir = env::var("HOME").expect("Could not find home dir");
+        PathBuf::from(format!("{}/.ruin/{}.png", home_dir, name))
     };
 
     let tmp = PathBuf::from("/tmp/ruin");
@@ -86,7 +86,7 @@ fn create(
 
     let x = (3840 - width) / 2;
     let y = (2160 - height) / 2;
-    image::imageops::overlay(&mut background, &output, x as i64, y as i64);
+    imageops::overlay(&mut background, &output, x as i64, y as i64);
 
     background
 }
@@ -110,7 +110,7 @@ fn set_wallpaper(
 }
 
 async fn get_image(name: &String, img_path: &PathBuf) -> Result<DynamicImage, Box<dyn Error>> {
-    let image = reqwest::get(format!("https://ruin.shuttleapp.rs/{name}"))
+    let image = get(format!("https://ruin.shuttleapp.rs/{name}"))
         .await?
         .bytes()
         .await?;
@@ -121,5 +121,23 @@ async fn get_image(name: &String, img_path: &PathBuf) -> Result<DynamicImage, Bo
     Ok(image)
 }
 
+fn get_name(args: Vec<String>) -> Result<String, Box<dyn Error>> {
+    if let Some(name) = args.get(1) {
+        return Ok(name.into());
+    }
 
+    let file = File::open("/etc/os-release")?;
+    let buf_reader = BufReader::new(file);
+    let line = buf_reader
+        .lines()
+        .filter_map(|line| line.ok())
+        .find(|line| line.split_once("=").unwrap_or_default().0 == "ID");
 
+    Ok(line
+        .ok_or("")?
+        .split_once("=")
+        .ok_or("")?
+        .1
+        .trim()
+        .to_owned())
+}
