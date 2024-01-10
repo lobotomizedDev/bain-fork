@@ -39,15 +39,14 @@ impl Battery {
             .unwrap_or(0)
     }
 
-    pub fn new() -> Self {
-        let battery_path = find_battery_path().expect("Battery not found");
+    pub fn new(battery_path: &Path) -> Self {
         let status = Self::get_status(&battery_path);
         let capacity = Self::get_capacity(&battery_path);
         Self { status, capacity }
     }
 }
 
-fn find_battery_path() -> Option<PathBuf> {
+pub fn find_battery_path() -> Option<PathBuf> {
     fs::read_dir("/sys/class/power_supply")
         .ok()?
         .map(|entry| {

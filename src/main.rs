@@ -1,7 +1,7 @@
 mod battery;
 mod color_schemes;
 
-use battery::{Battery, BatteryStatus};
+use battery::{find_battery_path, Battery, BatteryStatus};
 use color_schemes::{color_schemes, Colors};
 use image::{self, imageops, io::Reader, DynamicImage, GenericImageView, ImageBuffer, Rgba};
 use reqwest::get;
@@ -41,9 +41,10 @@ async fn main() {
     };
 
     let color_scheme = color_schemes(&name);
+    let battery_path = find_battery_path().expect("Battery not found");
 
     loop {
-        let battery = Battery::new();
+        let battery = Battery::new(&battery_path);
         if battery != previous {
             let image = create(&battery, &color_scheme, &image);
             let _ = set_wallpaper(image, &background_path);
