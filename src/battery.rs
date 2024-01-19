@@ -53,7 +53,10 @@ pub fn find_battery_path() -> Option<PathBuf> {
             let path = entry.ok()?.path();
             let handle = thread::spawn(move || {
                 let file_content = fs::read_to_string(path.join("type")).ok()?;
-                if file_content.trim() == "Battery" {
+                if file_content.trim() == "Battery"
+                    && path.join("status").exists()
+                    && path.join("capacity").exists()
+                {
                     Some(path)
                 } else {
                     None

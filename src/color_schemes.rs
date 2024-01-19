@@ -10,12 +10,18 @@ pub fn color_schemes(arg: &String) -> Colors {
         "arch" => Colors {
             charging: [192, 192, 192, 255],
             default: [23, 147, 208, 255],
-            low_battery: [255, 77, 77, 255],
+            low_battery: [128, 0, 32, 255],
             background: [40, 40, 40, 255],
         },
-        "manjaro" => Colors {
+        "gentoo" => Colors {
+            default: [48, 48, 48, 255],
+            charging: [110, 86, 175, 255],
+            low_battery: [242, 222, 222, 255],
+            background: [40, 40, 40, 255],
+        },
+        "artix" => Colors {
             charging: [192, 192, 192, 255],
-            default: [52, 190, 91, 255],
+            default: [23, 147, 208, 255],
             low_battery: [128, 0, 32, 255],
             background: [40, 40, 40, 255],
         },
@@ -25,15 +31,15 @@ pub fn color_schemes(arg: &String) -> Colors {
             low_battery: [128, 0, 32, 255],
             background: [40, 40, 40, 255],
         },
-        "ubuntu" => Colors {
+        "manjaro" => Colors {
             charging: [192, 192, 192, 255],
-            default: [233, 84, 32, 255],
+            default: [52, 190, 91, 255],
             low_battery: [128, 0, 32, 255],
             background: [40, 40, 40, 255],
         },
-        "artix" => Colors {
+        "ubuntu" => Colors {
             charging: [192, 192, 192, 255],
-            default: [23, 147, 208, 255],
+            default: [233, 84, 32, 255],
             low_battery: [128, 0, 32, 255],
             background: [40, 40, 40, 255],
         },
