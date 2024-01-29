@@ -1,11 +1,8 @@
-# Ruin - The battery indicator (written in rust)
+# Ruin - The battery indicator
 
 ### Prerequisites
 
-Make sure you have the following programs installed:
-
-- [git](https://git-scm.com/)
-- [rust](https://rust-lang.github.io/rustup/installation/index.html)
+- [rust](https://www.rust-lang.org/tools/install)
 
 ### Supported Environments
 
@@ -24,35 +21,29 @@ Make sure you have the following programs installed:
 
 ### Installation
 
-1. Clone the repository:
+1. Install Ruin:
 
     ```bash
-    git clone https://github.com/lobotomizedDev/ruin
+    cargo install ruin
     ```
 
-2. Run the Makefile script:
-
-    ```bash
-    make install
-    ```
-
-3. Run the script from your startup file (e.g., `.xinitrc`). Add `&` at the end of the command to run it in the background:
+2. Run the script from your startup file (e.g., `.xinitrc`). Add `&` at the end of the command to run it in the background:
 
     ```bash
     ruin &
     ```
 
-4. If on wayland start swww daemon from your startup file:
+3. If on wayland start swww daemon from your startup file:
 
     ```bash
     swww init 
     ```
 
-6. Restart your session (log out and log back in):
+4. Restart your session (log out and log back in):
 
 ### Adding Custom Battery Indicator
 
-1. Create a PNG image with a `#8FBCBB` background color. Use the following ImageMagick command to convert your image:
+1. Create a PNG image with a `#8FBCBB` color. Use the following ImageMagick command to convert your image:
 
     ```bash
     convert input_image.png -fill "#8fbcbb" -colorize 100% output_image.png
@@ -61,7 +52,7 @@ Make sure you have the following programs installed:
 2. Copy your image to the `images` directory:
 
     ```bash
-    cp ~/Pictures/output_image.png ~/.ruin/images
+    cp ~/Pictures/output_image.png ~/.config/ruin/images
     ```
 
 3. Run Ruin with the name of your image as an argument:
@@ -72,21 +63,20 @@ Make sure you have the following programs installed:
 
 ### Custom Color Scheme
 
-1. Open the `color_schemes.rs` file:
+1. Open the `colorschemes.yaml` file:
 
     ```bash
-    vim ruin/src/color_schemes.rs
+    vim ~/.config/ruin/colorschemes.yaml
     ```
 
-2. Inside the `match` statement, add your custom color scheme (colors should be in rgba):
+2. Add your custom color scheme (colors should be in rgba):
 
     ```rust
-    "example" => Colors {
-        charging: [r, g, b, a],
-        default: [r, g, b, a],
-        low_battery: [r, g, b, a],
-        background: [r, g, b, a],
-    },
+    example:
+      charging: [r, g, b, a]
+      default: [r, g, b, a]
+      low_battery: [r, g, b, a]
+      background: [r, g, b, a]
     ```
 
 3. Run the Makefile script:
