@@ -11,7 +11,6 @@ use std::{
     fs::{self, File},
     io::{BufRead, BufReader, Cursor},
     path::PathBuf,
-    process::Command,
     thread,
     time::Duration,
 };
@@ -62,13 +61,11 @@ async fn main() {
 
     let color_scheme = get_colorscheme(&ruin_dir, &name).unwrap_or_default();
     let battery_path = find_battery_path().expect("Battery not found");
-
-    let background_path = tmp.join("background.png");
     loop {
         let battery = Battery::new(&battery_path);
         if battery != previous {
             let image = create(&battery, &color_scheme, &image);
-            let _ = set_wallpaper(image, &background_path);
+            let _ = wlrs::init(image);
             previous = battery;
         }
         thread::sleep(Duration::from_secs(5));
@@ -150,22 +147,4 @@ fn create(
     imageops::overlay(&mut background, &output, x as i64, y as i64);
 
     background
-}
-
-fn set_wallpaper(
-    image: ImageBuffer<Rgba<u8>, Vec<u8>>,
-    background_path: &PathBuf,
-) -> Result<(), Box<dyn Error>> {
-    image.save(&background_path)?;
-    match env::var("XDG_SESSION_TYPE").unwrap_or_default().as_str() {
-        "wayland" => {
-            Command::new("swww")
-                .arg("img")
-                .arg(background_path)
-                .spawn()?;
-        }
-        _ => wallpaper::set_from_path(background_path.display().to_string().as_str())?,
-    }
-
-    Ok(())
 }
