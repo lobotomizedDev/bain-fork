@@ -4,20 +4,7 @@
 
 - [rust](https://www.rust-lang.org/tools/install)
 
-### Supported Environments
-
-- Most Wayland compositors (requires [swww](https://github.com/Horus645/swww))
-- dwm (requires [feh](https://github.com/derf/feh.git))
-- i3 (requires [feh](https://github.com/derf/feh.git))
-- GNOME
-- KDE
-- Cinnamon
-- Unity
-- Budgie
-- XFCE
-- LXDE
-- MATE
-- Deepin
+[Supported Environments](https://github.com/unixpariah/wlrs/blob/main/README.md#wlrs-w%C9%94%CB%90lr%C9%99s)
 
 ### Installation
 

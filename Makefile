@@ -1,7 +1,7 @@
 BINARY_NAME = ruin
 TARGET = target/release/$(BINARY_NAME)
 INSTALL_LOCATION = /usr/local/bin/$(BINARY_NAME)
-IMAGES_LOCATION = ~/.$(BINARY_NAME)
+IMAGES_LOCATION = ~/.config/$(BINARY_NAME)
 
 .PHONY: all build install uninstall clean
 
