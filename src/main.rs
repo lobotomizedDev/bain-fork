@@ -101,6 +101,7 @@ async fn get_image(name: &String, img_path: &PathBuf) -> Result<DynamicImage, Bo
     let image = Reader::new(Cursor::new(image))
         .with_guessed_format()?
         .decode()?;
+    let _ = fs::create_dir_all(img_path.parent().unwrap());
     image.save(img_path)?;
     Ok(image)
 }
