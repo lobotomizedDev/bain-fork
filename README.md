@@ -4,7 +4,7 @@
 
 - [rust](https://www.rust-lang.org/tools/install)
 
-[Supported Environments](https://github.com/unixpariah/wlrs/blob/main/README.md#wlrs-w%C9%94%CB%90lr%C9%99s)
+[Supported Environments](https://github.com/unixpariah/wlrs?tab=readme-ov-file#supported-environments)
 
 ### Installation
 
@@ -14,19 +14,13 @@
     cargo install ruin
     ```
 
-2. Run the script from your startup file (e.g., `.xinitrc`). Add `&` at the end of the command to run it in the background:
+2. Run the script from your startup file
 
     ```bash
-    ruin &
+    ruin
     ```
 
-3. If on wayland start swww daemon from your startup file:
-
-    ```bash
-    swww init 
-    ```
-
-4. Restart your session (log out and log back in):
+3. Restart your session (log out and log back in):
 
 ### Adding Custom Battery Indicator
 
