@@ -24,7 +24,7 @@
 
 ### Adding Custom Battery Indicator
 
-1. Create a PNG image with a `#8FBCBB` color. Use the following ImageMagick command to convert your image:
+1. Create an image with a `#8FBCBB` color. Use the following ImageMagick command to convert your image:
 
     ```bash
     convert input_image.png -fill "#8fbcbb" -colorize 100% output_image.png
@@ -50,14 +50,14 @@
     vim ~/.config/ruin/colorschemes.yaml
     ```
 
-2. Add your custom color scheme (colors should be in rgba):
+2. Add your custom color scheme (colors should be in rgb):
 
     ```rust
     example:
-      charging: [r, g, b, a]
-      default: [r, g, b, a]
-      low_battery: [r, g, b, a]
-      background: [r, g, b, a]
+      charging: [r, g, b]
+      default: [r, g, b]
+      low_battery: [r, g, b]
+      background: [r, g, b]
     ```
 
 3. Run the Makefile script:

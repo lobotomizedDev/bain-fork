@@ -1,7 +1,10 @@
 mod battery;
 
 use battery::{find_battery_path, Battery, BatteryStatus};
-use image::{self, imageops, io::Reader, DynamicImage, GenericImageView, ImageBuffer, Rgba};
+use image::{
+    self, imageops, io::Reader, DynamicImage, GenericImageView, ImageBuffer, Pixel, Rgb, RgbImage,
+    Rgba,
+};
 use reqwest::get;
 use serde::{Deserialize, Serialize};
 use std::{
@@ -19,19 +22,19 @@ static DELAY: Duration = Duration::from_secs(1);
 
 #[derive(Debug, Serialize, Deserialize)]
 struct Colors {
-    charging: [u8; 4],
-    default: [u8; 4],
-    low_battery: [u8; 4],
-    background: [u8; 4],
+    charging: [u8; 3],
+    default: [u8; 3],
+    low_battery: [u8; 3],
+    background: [u8; 3],
 }
 
 impl Default for Colors {
     fn default() -> Self {
         Self {
-            charging: [255, 255, 0, 255],
-            default: [91, 194, 54, 255],
-            low_battery: [191, 19, 28, 255],
-            background: [40, 40, 40, 255],
+            charging: [255, 255, 0],
+            default: [91, 194, 54],
+            low_battery: [191, 19, 28],
+            background: [40, 40, 40],
         }
     }
 }
@@ -39,7 +42,7 @@ impl Default for Colors {
 #[tokio::main]
 async fn main() {
     let args: Vec<String> = env::args().collect();
-    let name = get_name(args).expect("Could not get distribution name");
+    let name = get_name(args).unwrap_or("linux".into());
     let ruin_dir = {
         let home_dir = env::var("HOME").expect("Could not find home dir");
         PathBuf::from(format!("{}/.config/ruin", home_dir))
@@ -112,11 +115,7 @@ fn get_colorscheme(path: &PathBuf, name: &String) -> Result<Colors, Box<dyn Erro
     Ok(colorschemes.remove(name).ok_or("")?)
 }
 
-fn create(
-    battery: &Battery,
-    color_scheme: &Colors,
-    image: &DynamicImage,
-) -> ImageBuffer<Rgba<u8>, Vec<u8>> {
+fn create(battery: &Battery, color_scheme: &Colors, image: &DynamicImage) -> RgbImage {
     let (status, capacity) = (&battery.status, battery.capacity);
     let (width, height) = (image.width(), image.height());
 
@@ -126,22 +125,25 @@ fn create(
         _ => color_scheme.low_battery,
     };
 
-    let mut output: ImageBuffer<Rgba<u8>, Vec<u8>> = ImageBuffer::new(width, height);
+    let mut output = RgbImage::new(width, height);
     image.pixels().for_each(|(x, y, pixel)| {
         let capacity = 1.0 - capacity as f32 / 100.0;
-        if y as f32 > height as f32 * capacity && pixel == Rgba([143, 188, 187, 255]) {
-            output.put_pixel(x, y, Rgba(color));
-        } else {
-            output.put_pixel(x, y, pixel);
+        match pixel {
+            Rgba([143, 188, 187, 255]) if y as f32 > height as f32 * capacity => {
+                output.put_pixel(x, y, Rgb(color))
+            }
+            Rgba([_, _, _, alpha]) if alpha < 255 => {
+                output.put_pixel(x, y, Rgb(color_scheme.background))
+            }
+            _ => output.put_pixel(x, y, pixel.to_rgb()),
         }
     });
-
     let mut background = ImageBuffer::new(3840, 2160);
     background
         .pixels_mut()
         .collect::<Vec<_>>()
         .iter_mut()
-        .for_each(|pixel| **pixel = Rgba(color_scheme.background));
+        .for_each(|pixel| **pixel = Rgb(color_scheme.background));
 
     let x = (3840 - width) / 2;
     let y = (2160 - height) / 2;
