@@ -2,8 +2,7 @@ mod battery;
 
 use battery::{find_battery_path, Battery, BatteryStatus};
 use image::{
-    self, imageops, io::Reader, DynamicImage, GenericImageView, ImageBuffer, Pixel, Rgb, RgbImage,
-    Rgba,
+    imageops, io::Reader, DynamicImage, GenericImageView, ImageBuffer, Pixel, Rgb, RgbImage, Rgba,
 };
 use reqwest::get;
 use serde::{Deserialize, Serialize};
