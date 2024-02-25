@@ -6,6 +6,7 @@ use image::{
 };
 use reqwest::get;
 use serde::{Deserialize, Serialize};
+use clap::Parser;
 use std::{
     collections::HashMap,
     env,
@@ -38,16 +39,24 @@ impl Default for Colors {
     }
 }
 
+#[derive(Parser, Debug)]
+struct Args {
+    name: Option<String>,
+    #[arg(short, long, num_args(0..))]
+    screens: Option<Vec<u8>>,
+}
+
 #[tokio::main]
 async fn main() {
-    let args: Vec<String> = env::args().collect();
-    let name = get_name(args).unwrap_or("linux".into());
+    let args = Args::parse();
+    let name = args.name.unwrap_or_else(|| get_name().unwrap_or("linux".to_string()));
+
     let ruin_dir = {
         let home_dir = env::var("HOME").expect("Could not find home dir");
         PathBuf::from(format!("{}/.config/ruin", home_dir))
     };
 
-    let img_path = ruin_dir.join(format!("images/{name}.png"));
+    let img_path = ruin_dir.join(format!("images/{}.png", name));
     let image = match image::open(&img_path) {
         Ok(image) => image,
         Err(_) => get_image(&name, &img_path)
@@ -67,18 +76,15 @@ async fn main() {
         let battery = Battery::new(&battery_path);
         if battery != previous {
             let image = create(&battery, &color_scheme, &image);
-            let _ = wlrs::set_from_memory(image);
+            // Rip clone
+            let _ = wlrs::set_from_memory(image, args.screens.clone().unwrap_or(Vec::new()));
             previous = battery;
         }
         thread::sleep(DELAY);
     }
 }
 
-fn get_name(args: Vec<String>) -> Result<String, Box<dyn Error>> {
-    if let Some(name) = args.get(1) {
-        return Ok(name.into());
-    }
-
+fn get_name() -> Result<String, Box<dyn Error>> {
     let file = File::open("/etc/os-release")?;
     let buf_reader = BufReader::new(file);
     let line = buf_reader
