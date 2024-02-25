@@ -67,7 +67,7 @@ async fn main() {
         let battery = Battery::new(&battery_path);
         if battery != previous {
             let image = create(&battery, &color_scheme, &image);
-            let _ = wlrs::set_from_memory(image);
+            wlrs::set_from_memory(image, &[]).unwrap();
             previous = battery;
         }
         thread::sleep(DELAY);

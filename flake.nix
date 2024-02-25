@@ -15,7 +15,7 @@
   in {
     devShell = pkgs.mkShell {
       buildInputs = with pkgs; with llvmPackages;  [
-        clang rust.latest.toolchain pkg-config openssl libsodium libclang.lib
+        clang rust.latest.toolchain pkg-config openssl
         libxkbcommon xorg.libxcb
       ];
 
