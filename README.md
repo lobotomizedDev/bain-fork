@@ -14,13 +14,17 @@
     cargo install ruin
     ```
 
-2. Run the script from your startup file
+2. Run the script:
 
     ```bash
     ruin
     ```
 
-3. Restart your session (log out and log back in):
+3. You can also set wallpaper per screen (By default it will set wallpaper to all screens):
+
+    ```bash
+    ruin -s 0 1
+    ```
 
 ### Adding Custom Battery Indicator
 
@@ -30,16 +34,16 @@
     convert input_image.png -fill "#8fbcbb" -colorize 100% output_image.png
     ```
 
-2. Copy your image to the `images` directory:
+2. Copy your image to the config directory:
 
     ```bash
-    cp ~/Pictures/output_image.png ~/.config/ruin/images
+    cp ./output_image.png ~/.config/ruin/images
     ```
 
 3. Run Ruin with the name of your image as an argument:
 
     ```bash
-    ruin output_image &
+    ruin output_image
     ```
 
 ### Custom Color Scheme
@@ -60,10 +64,10 @@
       background: [r, g, b]
     ```
 
-3. Run the Makefile script:
+3. Run the script
 
     ```bash
-    make clean install
+    ruin example
     ```
 
-Highly inspired by [bain](https://github.com/amishbni/bain/tree/master).
+Inspired by [bain](https://github.com/amishbni/bain/tree/master).

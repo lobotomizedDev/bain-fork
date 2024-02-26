@@ -1,13 +1,13 @@
 [package]
 name = "ruin"
-version = "1.2.6"
+version = "1.3.0"
 edition = "2021"
 license = "MIT"
 description = "Battery indicator as wallpaper"
 repository = "https://github.com/unixpariah/ruin.git"
 
 [dependencies]
-clap = { version = "4.5.1", features = ["derive"] }
+clap = { version = "4.0.0", features = ["derive"] }
 tokio = { version = "1.34.0", features = ["full"] }
 serde = { version = "1.0.196", features = ["derive"] }
 serde_yaml = "0.9.31"
