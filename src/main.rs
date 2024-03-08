@@ -13,12 +13,10 @@ use std::{
     error::Error,
     fs::{self, File},
     io::{BufRead, BufReader, Cursor},
-    path::PathBuf,
+    path::{Path, PathBuf},
     thread,
     time::Duration,
 };
-
-static DELAY: Duration = Duration::from_secs(1);
 
 #[derive(Debug, Serialize, Deserialize)]
 struct Colors {
@@ -44,6 +42,8 @@ struct Args {
     name: Option<String>,
     #[arg(short, long, num_args(0..))]
     screens: Option<Vec<u8>>,
+    #[arg(short, long, num_args(0..))]
+    time: Option<u64>,
 }
 
 #[tokio::main]
@@ -80,7 +80,7 @@ async fn main() {
             let _ = wlrs::set_from_memory(image, args.screens.clone().unwrap_or(Vec::new()));
             previous = battery;
         }
-        thread::sleep(DELAY);
+        thread::sleep(Duration::from_secs(args.time.unwrap_or(5)));
     }
 }
 
@@ -89,12 +89,12 @@ fn get_name() -> Result<String, Box<dyn Error>> {
     let buf_reader = BufReader::new(file);
     let line = buf_reader
         .lines()
-        .filter_map(|line| line.ok())
-        .find(|line| line.split_once("=").unwrap_or_default().0 == "ID");
+        .map_while(Result::ok)
+        .find(|line| line.split_once('=').unwrap_or_default().0 == "ID");
 
     Ok(line
         .ok_or("")?
-        .split_once("=")
+        .split_once('=')
         .ok_or("")?
         .1
         .trim()
@@ -114,8 +114,8 @@ async fn get_image(name: &String, img_path: &PathBuf) -> Result<DynamicImage, Bo
     Ok(image)
 }
 
-fn get_colorscheme(path: &PathBuf, name: &String) -> Result<Colors, Box<dyn Error>> {
-    let file = fs::read_to_string(path.join(format!("colorschemes.yaml")))?;
+fn get_colorscheme(path: &Path, name: &String) -> Result<Colors, Box<dyn Error>> {
+    let file = fs::read_to_string(path.join("colorschemes.yaml"))?;
     let mut colorschemes: HashMap<String, Colors> = serde_yaml::from_str(&file)?;
     Ok(colorschemes.remove(name).ok_or("")?)
 }

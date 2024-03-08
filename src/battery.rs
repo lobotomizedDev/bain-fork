@@ -40,8 +40,8 @@ impl Battery {
     }
 
     pub fn new(battery_path: &Path) -> Self {
-        let status = Self::get_status(&battery_path);
-        let capacity = Self::get_capacity(&battery_path);
+        let status = Self::get_status(battery_path);
+        let capacity = Self::get_capacity(battery_path);
         Self { status, capacity }
     }
 }

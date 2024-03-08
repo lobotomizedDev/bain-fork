@@ -6,7 +6,7 @@
 
 [Supported Environments](https://github.com/unixpariah/wlrs?tab=readme-ov-file#supported-environments)
 
-### Installation
+### Usage
 
 1. Install Ruin:
 
@@ -20,10 +20,16 @@
     ruin
     ```
 
-3. You can also set wallpaper per screen (By default it will set wallpaper to all screens):
+3. If you want to set the wallpaper for specific screens (the default behavior is to set the wallpaper on all screens), use the following command:
 
     ```bash
     ruin -s 0 1
+    ```
+
+4. If you want to modify the refresh interval (the default is every 5 minutes), use this command:
+
+    ```bash
+    ruin -t 1
     ```
 
 ### Adding Custom Battery Indicator
