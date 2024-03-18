@@ -26,7 +26,7 @@
     ruin -s 0 1
     ```
 
-4. If you want to modify the refresh interval (the default is every 5 minutes), use this command:
+4. If you want to modify the refresh interval (the default is every 5 seconds), use this command:
 
     ```bash
     ruin -t 1
