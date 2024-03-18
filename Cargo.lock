@@ -1003,7 +1003,7 @@ dependencies = [
 
 [[package]]
 name = "ruin"
-version = "1.3.0"
+version = "1.4.0"
 dependencies = [
  "clap",
  "image",
@@ -1794,8 +1794,6 @@ dependencies = [
 [[package]]
 name = "wlrs"
 version = "1.0.2"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "366d5db872861c25470eed54bf0cc79d4d07a8cfacc6123cc9864baf16f060be"
 dependencies = [
  "fast_image_resize",
  "image",

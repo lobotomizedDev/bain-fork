@@ -76,8 +76,7 @@ async fn main() {
         let battery = Battery::new(&battery_path);
         if battery != previous {
             let image = create(&battery, &color_scheme, &image);
-            // Rip clone
-            let _ = wlrs::set_from_memory(image, args.screens.clone().unwrap_or(Vec::new()));
+            wlrs::set_from_memory(image, args.screens.clone().unwrap_or(Vec::new())).expect("Failed to set wallpaper");
             previous = battery;
         }
         thread::sleep(Duration::from_secs(args.time.unwrap_or(5)));
