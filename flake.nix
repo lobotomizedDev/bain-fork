@@ -1,5 +1,5 @@
 {
-  description = "Simple status bar for wayland";
+  description = "Battery indicator";
 
   inputs = {
     nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
@@ -21,15 +21,19 @@
           buildInputs = with pkgs; [
             rustc
             cargo
+            clippy
             pkg-config
             openssl
+            rustfmt
+            rust-analyzer
+            nodejs_21
           ];
         };
       in {
         devShell = rustEnv;
         packages = {
-          my-rust-app = pkgs.stdenv.mkDerivation {
-            name = "my-rust-app";
+          ruin = pkgs.stdenv.mkDerivation {
+            name = "ruin";
             src = ./.;
             buildInputs = with pkgs; [rustc cargo];
             buildPhase = ''
@@ -37,7 +41,7 @@
             '';
             installPhase = ''
               mkdir -p $out/bin
-              cp target/release/my-rust-app $out/bin/
+              cp target/release/ruin $out/bin/
             '';
           };
         };

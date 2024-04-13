@@ -1,15 +1,14 @@
 mod battery;
 
 use battery::{find_battery_path, Battery, BatteryStatus};
+use clap::Parser;
 use image::{
     imageops, io::Reader, DynamicImage, GenericImageView, ImageBuffer, Pixel, Rgb, RgbImage, Rgba,
 };
 use reqwest::get;
 use serde::{Deserialize, Serialize};
-use clap::Parser;
 use std::{
     collections::HashMap,
-    env,
     error::Error,
     fs::{self, File},
     io::{BufRead, BufReader, Cursor},
@@ -17,6 +16,7 @@ use std::{
     thread,
     time::Duration,
 };
+use wlrs::CropMode;
 
 #[derive(Debug, Serialize, Deserialize)]
 struct Colors {
@@ -41,7 +41,7 @@ impl Default for Colors {
 struct Args {
     name: Option<String>,
     #[arg(short, long, num_args(0..))]
-    screens: Option<Vec<u8>>,
+    screens: Option<Vec<usize>>,
     #[arg(short, long, num_args(0..))]
     time: Option<u64>,
 }
@@ -49,11 +49,13 @@ struct Args {
 #[tokio::main]
 async fn main() {
     let args = Args::parse();
-    let name = args.name.unwrap_or_else(|| get_name().unwrap_or("linux".to_string()));
+    let name = args
+        .name
+        .unwrap_or_else(|| get_name().unwrap_or("linux".to_string()));
 
     let ruin_dir = {
-        let home_dir = env::var("HOME").expect("Could not find home dir");
-        PathBuf::from(format!("{}/.config/ruin", home_dir))
+        let home_dir = dirs::config_dir().expect("XDG_HOME_CONFIG not found");
+        PathBuf::from(format!("{}/ruin", home_dir.display()))
     };
 
     let img_path = ruin_dir.join(format!("images/{}.png", name));
@@ -76,7 +78,9 @@ async fn main() {
         let battery = Battery::new(&battery_path);
         if battery != previous {
             let image = create(&battery, &color_scheme, &image);
-            wlrs::set_from_memory(image, args.screens.clone().unwrap_or(Vec::new())).expect("Failed to set wallpaper");
+            let screens = args.screens.clone().unwrap_or(Vec::new());
+            wlrs::set_from_memory(image, screens, CropMode::Fit(None))
+                .expect("Failed to set wallpaper");
             previous = battery;
         }
         thread::sleep(Duration::from_secs(args.time.unwrap_or(5)));
