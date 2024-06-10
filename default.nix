@@ -1,19 +1,22 @@
-{pkgs}: let
-  manifest = (pkgs.lib.importTOML ./Cargo.toml).package;
+{
+  lib,
+  rustPlatform,
+}: let
+  cargoToml = builtins.fromTOML (builtins.readFile ./Cargo.toml);
 in
-  pkgs.rustPlatform.buildRustPackage {
-    pname = manifest.name;
-    version = manifest.version;
+  rustPlatform.buildRustPackage {
+    pname = "ruin";
+    version = "${cargoToml.package.version}";
     cargoLock.lockFile = ./Cargo.lock;
-    src = pkgs.lib.cleanSource ./.;
-
-    buildInputs = with pkgs; [
-      openssl
-      cargo
-      rustc
-    ];
-
-    nativeBuildInputs = with pkgs; [
-      pkg-config
-    ];
+    src = lib.fileset.toSource {
+      root = ./.;
+      fileset =
+        lib.fileset.intersection
+        (lib.fileset.fromSource (lib.sources.cleanSource ./.))
+        (lib.fileset.unions [
+          ./src
+          ./Cargo.toml
+          ./Cargo.lock
+        ]);
+    };
   }

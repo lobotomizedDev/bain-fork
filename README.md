@@ -1,5 +1,7 @@
 # Ruin - The battery indicator
 
+Create a battery indicator from any image
+
 ### Prerequisites
 
 - [rust](https://www.rust-lang.org/tools/install)

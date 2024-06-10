@@ -1,50 +1,41 @@
 {
-  description = "Battery indicator";
-
   inputs = {
-    nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
-    flake-utils.url = "github:numtide/flake-utils";
+    nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
   };
 
   outputs = {
     self,
     nixpkgs,
-    flake-utils,
-    ...
-  }:
-    flake-utils.lib.eachDefaultSystem (
-      system: let
-        pkgs = import nixpkgs {
-          inherit system;
+  }: let
+    forAllSystems = function:
+      nixpkgs.lib.genAttrs [
+        "x86_64-linux"
+      ] (system: function nixpkgs.legacyPackages.${system});
+  in {
+    overlays.default = final: prev: {
+      ruin =
+        final.callPackage ./default.nix {
         };
-        rustEnv = pkgs.mkShell {
-          buildInputs = with pkgs; [
-            rustc
-            cargo
-            clippy
-            pkg-config
-            openssl
-            rustfmt
-            rust-analyzer
-            nodejs_21
-          ];
+    };
+
+    packages = forAllSystems (pkgs: rec {
+      ruin =
+        pkgs.callPackage ./default.nix {
         };
-      in {
-        devShell = rustEnv;
-        packages = {
-          ruin = pkgs.stdenv.mkDerivation {
-            name = "ruin";
-            src = ./.;
-            buildInputs = with pkgs; [rustc cargo];
-            buildPhase = ''
-              cargo build --release
-            '';
-            installPhase = ''
-              mkdir -p $out/bin
-              cp target/release/ruin $out/bin/
-            '';
-          };
-        };
-      }
-    );
+      default = ruin;
+    });
+
+    devShells = forAllSystems (pkgs: {
+      default = pkgs.mkShell {
+        strictDeps = true;
+        nativeBuildInputs = with pkgs; [
+          cargo
+          rustc
+          rust-analyzer-unwrapped
+          rustfmt
+          clippy
+        ];
+      };
+    });
+  };
 }

@@ -1,0 +1,3 @@
+[submodule "wlrs"]
+	path = wlrs
+	url = https://github.com/unixpariah/wlrs

@@ -2,16 +2,13 @@ mod battery;
 
 use battery::{find_battery_path, Battery, BatteryStatus};
 use clap::Parser;
-use image::{
-    imageops, io::Reader, DynamicImage, GenericImageView, ImageBuffer, Pixel, Rgb, RgbImage, Rgba,
-};
-use reqwest::get;
+use core::panic;
+use image::{imageops, DynamicImage, GenericImageView, ImageBuffer, Pixel, Rgb, RgbImage, Rgba};
 use serde::{Deserialize, Serialize};
 use std::{
     collections::HashMap,
     error::Error,
-    fs::{self, File},
-    io::{BufRead, BufReader, Cursor},
+    fs,
     path::{Path, PathBuf},
     thread,
     time::Duration,
@@ -39,39 +36,31 @@ impl Default for Colors {
 
 #[derive(Parser, Debug)]
 struct Args {
-    name: Option<String>,
+    name: String,
     #[arg(short, long, num_args(0..))]
     screens: Option<Vec<usize>>,
     #[arg(short, long, num_args(0..))]
     time: Option<u64>,
 }
 
-#[tokio::main]
-async fn main() {
+fn main() {
     let args = Args::parse();
-    let name = args
-        .name
-        .unwrap_or_else(|| get_name().unwrap_or("linux".to_string()));
 
     let ruin_dir = {
         let home_dir = dirs::config_dir().expect("XDG_HOME_CONFIG not found");
         PathBuf::from(format!("{}/ruin", home_dir.display()))
     };
 
-    let img_path = ruin_dir.join(format!("images/{}.png", name));
-    let image = match image::open(&img_path) {
-        Ok(image) => image,
-        Err(_) => get_image(&name, &img_path)
-            .await
-            .expect("Failed to fetch image from server"),
-    };
+    let img_path = ruin_dir.join(format!("images/{}.png", args.name));
+    let image =
+        image::open(img_path).unwrap_or_else(|_| panic!("Image {}.png not found", args.name));
 
     let mut previous = Battery {
         capacity: 0,
         status: BatteryStatus::NotCharging,
     };
 
-    let color_scheme = get_colorscheme(&ruin_dir, &name).unwrap_or_default();
+    let color_scheme = get_colorscheme(&ruin_dir, &args.name).unwrap_or_default();
     let battery_path = find_battery_path().expect("Battery not found");
 
     loop {
@@ -85,36 +74,6 @@ async fn main() {
         }
         thread::sleep(Duration::from_secs(args.time.unwrap_or(5)));
     }
-}
-
-fn get_name() -> Result<String, Box<dyn Error>> {
-    let file = File::open("/etc/os-release")?;
-    let buf_reader = BufReader::new(file);
-    let line = buf_reader
-        .lines()
-        .map_while(Result::ok)
-        .find(|line| line.split_once('=').unwrap_or_default().0 == "ID");
-
-    Ok(line
-        .ok_or("")?
-        .split_once('=')
-        .ok_or("")?
-        .1
-        .trim()
-        .to_owned())
-}
-
-async fn get_image(name: &String, img_path: &PathBuf) -> Result<DynamicImage, Box<dyn Error>> {
-    let image = get(format!("https://ruin.shuttleapp.rs/{name}"))
-        .await?
-        .bytes()
-        .await?;
-    let image = Reader::new(Cursor::new(image))
-        .with_guessed_format()?
-        .decode()?;
-    let _ = fs::create_dir_all(img_path.parent().unwrap());
-    image.save(img_path)?;
-    Ok(image)
 }
 
 fn get_colorscheme(path: &Path, name: &String) -> Result<Colors, Box<dyn Error>> {
@@ -134,17 +93,15 @@ fn create(battery: &Battery, color_scheme: &Colors, image: &DynamicImage) -> Rgb
     };
 
     let mut output = RgbImage::new(width, height);
-    image.pixels().for_each(|(x, y, pixel)| {
-        let capacity = 1.0 - capacity as f32 / 100.0;
-        match pixel {
-            Rgba([143, 188, 187, 255]) if y as f32 > height as f32 * capacity => {
-                output.put_pixel(x, y, Rgb(color))
-            }
-            Rgba([_, _, _, alpha]) if alpha < 255 => {
-                output.put_pixel(x, y, Rgb(color_scheme.background))
-            }
-            _ => output.put_pixel(x, y, pixel.to_rgb()),
+    let capacity = 1.0 - capacity as f32 / 100.0;
+    image.pixels().for_each(|(x, y, pixel)| match pixel {
+        Rgba([143, 188, 187, 255]) if y as f32 > height as f32 * capacity => {
+            output.put_pixel(x, y, Rgb(color))
         }
+        Rgba([_, _, _, alpha]) if alpha < 255 => {
+            output.put_pixel(x, y, Rgb(color_scheme.background))
+        }
+        _ => output.put_pixel(x, y, pixel.to_rgb()),
     });
     let mut background = ImageBuffer::new(3840, 2160);
     background
