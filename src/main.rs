@@ -36,6 +36,7 @@ impl Default for Colors {
 
 #[derive(Parser, Debug)]
 struct Args {
+    #[arg(default_value = "nix")]
     name: String,
     #[arg(short, long, num_args(0..))]
     screens: Option<Vec<usize>>,

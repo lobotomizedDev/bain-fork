@@ -17,6 +17,7 @@ in
           ./src
           ./Cargo.toml
           ./Cargo.lock
+          ./wlrs
         ]);
     };
   }

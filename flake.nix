@@ -10,14 +10,9 @@
     forAllSystems = function:
       nixpkgs.lib.genAttrs [
         "x86_64-linux"
+        "aarch64-linux"
       ] (system: function nixpkgs.legacyPackages.${system});
   in {
-    overlays.default = final: prev: {
-      ruin =
-        final.callPackage ./default.nix {
-        };
-    };
-
     packages = forAllSystems (pkgs: rec {
       ruin =
         pkgs.callPackage ./default.nix {
@@ -31,7 +26,7 @@
         nativeBuildInputs = with pkgs; [
           cargo
           rustc
-          rust-analyzer-unwrapped
+          rust-analyzer
           rustfmt
           clippy
         ];
