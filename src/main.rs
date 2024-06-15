@@ -4,12 +4,14 @@ use battery::{find_battery_path, Battery, BatteryStatus};
 use clap::Parser;
 use core::panic;
 use image::{imageops, DynamicImage, GenericImageView, ImageBuffer, Pixel, Rgb, RgbImage, Rgba};
+use inotify::{Inotify, WatchMask};
 use serde::{Deserialize, Serialize};
 use std::{
     collections::HashMap,
     error::Error,
     fs,
     path::{Path, PathBuf},
+    sync::{mpsc, Arc, RwLock},
     thread,
     time::Duration,
 };
@@ -36,10 +38,9 @@ impl Default for Colors {
 
 #[derive(Parser, Debug)]
 struct Args {
-    #[arg(default_value = "nix")]
     name: String,
     #[arg(short, long, num_args(0..))]
-    screens: Option<Vec<usize>>,
+    screens: Vec<usize>,
     #[arg(short, long, num_args(0..))]
     time: Option<u64>,
 }
@@ -61,14 +62,39 @@ fn main() {
         status: BatteryStatus::NotCharging,
     };
 
-    let color_scheme = get_colorscheme(&ruin_dir, &args.name).unwrap_or_default();
+    let color_scheme = Arc::new(RwLock::new(
+        get_colorscheme(&ruin_dir, &args.name).unwrap_or_default(),
+    ));
     let battery_path = find_battery_path().expect("Battery not found");
+
+    let (tx, rx) = mpsc::channel();
+
+    {
+        let color_scheme = Arc::clone(&color_scheme);
+        thread::spawn(move || {
+            let mut inotify = Inotify::init().unwrap();
+            _ = inotify.watches().add(
+                &ruin_dir,
+                WatchMask::MODIFY | WatchMask::MOVED_TO | WatchMask::CREATE,
+            );
+            let mut buffer = [0; 1024];
+            loop {
+                if let Ok(events) = inotify.read_events_blocking(&mut buffer) {
+                    events.for_each(|_| {
+                        *color_scheme.write().unwrap() =
+                            get_colorscheme(&ruin_dir, &args.name).unwrap_or_default();
+                        _ = tx.send(());
+                    });
+                }
+            }
+        });
+    }
 
     loop {
         let battery = Battery::new(&battery_path);
-        if battery != previous {
-            let image = create(&battery, &color_scheme, &image);
-            let screens = args.screens.clone().unwrap_or(Vec::new());
+        if battery != previous || rx.try_recv().is_ok() {
+            let image = create(&battery, &color_scheme.read().unwrap(), &image);
+            let screens = args.screens.clone();
             wlrs::set_from_memory(image, screens, CropMode::Fit(None))
                 .expect("Failed to set wallpaper");
             previous = battery;

@@ -13,3 +13,4 @@ serde_yaml = "0.9.31"
 image = "0.24.7"
 wlrs = { path = "wlrs" }
 dirs = "5.0.1"
+inotify = "0.10.2"
