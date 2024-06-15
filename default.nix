@@ -18,7 +18,6 @@ in
           ./Cargo.toml
           ./Cargo.lock
           ./wlrs
-          ./nix.png
         ]);
     };
   }

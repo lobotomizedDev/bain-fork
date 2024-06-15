@@ -2,7 +2,6 @@ mod battery;
 
 use battery::{find_battery_path, Battery, BatteryStatus};
 use clap::Parser;
-use core::panic;
 use image::{imageops, DynamicImage, GenericImageView, ImageBuffer, Pixel, Rgb, RgbImage, Rgba};
 use inotify::{Inotify, WatchMask};
 use serde::{Deserialize, Serialize};
@@ -10,12 +9,13 @@ use std::{
     collections::HashMap,
     error::Error,
     fs,
+    num::NonZeroU32,
     path::{Path, PathBuf},
     sync::{mpsc, Arc, RwLock},
     thread,
     time::Duration,
 };
-use wlrs::CropMode;
+use wlrs::{CropMode, ImageData};
 
 #[derive(Debug, Serialize, Deserialize)]
 struct Colors {
@@ -40,7 +40,7 @@ impl Default for Colors {
 struct Args {
     name: String,
     #[arg(short, long, num_args(0..))]
-    screens: Vec<usize>,
+    outputs: Vec<String>,
     #[arg(short, long, num_args(0..))]
     time: Option<u64>,
 }
@@ -94,8 +94,13 @@ fn main() {
         let battery = Battery::new(&battery_path);
         if battery != previous || rx.try_recv().is_ok() {
             let image = create(&battery, &color_scheme.read().unwrap(), &image);
-            let screens = args.screens.clone();
-            wlrs::set_from_memory(image, screens, CropMode::Fit(None))
+            let image_data = ImageData::new(
+                &image,
+                NonZeroU32::new(image.width()).unwrap(),
+                NonZeroU32::new(image.height()).unwrap(),
+            )
+            .unwrap();
+            wlrs::set_from_memory(image_data, &args.outputs, CropMode::Fit(None))
                 .expect("Failed to set wallpaper");
             previous = battery;
         }
